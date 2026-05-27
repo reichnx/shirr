@@ -9,10 +9,13 @@ const compression = require('compression');
 
 const app = express();
 
+// ✅ FIX: Enable trust proxy for rate limiting behind proxies
+app.set('trust proxy', 1);
+
 // Configuration
-const SHARE_RATE = 10; // 10 shares per
-const RATE_INTERVAL = 2000; // 2 seconds
-const MAX_LIMIT = 1000; // Max 1000 shares per campaign
+const SHARE_RATE = 10;
+const RATE_INTERVAL = 2000;
+const MAX_LIMIT = 1000;
 
 // Fallback API
 const FALLBACK_API = "https://vern-rest-api.vercel.app/api/share";
@@ -27,11 +30,16 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
+// ✅ FIX: Updated rate limiter configuration
 const limiter = rateLimit({
   windowMs: 60 * 1000,
   max: 5000,
-  message: { status: false, message: 'Too many requests, please slow down.' }
+  message: { status: false, message: 'Too many requests, please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    return req.ip || req.connection.remoteAddress;
+  }
 });
 
 app.use('/api/', limiter);
@@ -125,7 +133,7 @@ class ShareRateLimiter {
 
 const shareRateLimiter = new ShareRateLimiter();
 
-// Token extraction with fallback
+// Token extraction
 async function extract_token(cookie, ua) {
   for (let i = 0; i < 2; i++) {
     try {
@@ -168,7 +176,6 @@ async function extract_token(cookie, ua) {
 async function performShare(post_link, token, cookie, ua, shareId, totalLimit, updateCallback) {
   const results = [];
   
-  // Try main method first
   const mainShareFn = async () => {
     try {
       const response = await axios.post(
@@ -202,7 +209,6 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit, u
     }
   };
 
-  // Fallback API method (FBS API)
   const fallbackShareFn = async () => {
     try {
       const response = await axios.get(FALLBACK_API, {
@@ -238,7 +244,6 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit, u
         result = await shareRateLimiter.addRequest(mainShareFn);
         if (!result.success) {
           mainFailedCount++;
-          // Switch to fallback after 3 failures
           if (mainFailedCount >= 3) {
             useFallback = true;
             console.log('Switching to fallback API due to failures');
@@ -483,7 +488,6 @@ app.get("/api/stats", (req, res) => {
       completed_shares: completedShares,
       success_rate: successRate,
       active_shares: activeShares.size,
-      rate: `${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds`,
       max_limit: MAX_LIMIT
     }
   });
@@ -540,20 +544,28 @@ app.get("/api/tiktok-video", async (req, res) => {
 
 // ============= ERROR PAGES =============
 
+// 404 Error page
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
+// 500 Error page
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
 });
 
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  process.exit(0);
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Share rate: ${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds`);
   console.log(`📈 Max limit: ${MAX_LIMIT} shares per campaign`);
   console.log(`🔄 Fallback API: ${FALLBACK_API}`);
   console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
 });
