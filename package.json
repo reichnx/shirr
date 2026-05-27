@@ -1,26 +1,27 @@
 {
   "name": "facebook-share-booster",
   "version": "3.0.0",
-  "description": "Advanced Facebook Share Bot with Multi-Cookie Support, 10K shares per campaign, and Modern UI",
+  "description": "Advanced Facebook Share Automation Tool with Dual API Support (Main API + Vern API) - Fast sharing with glassmorphism UI",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "pm2:start": "pm2 start index.js --name facebook-share-booster",
-    "pm2:stop": "pm2 stop facebook-share-booster",
-    "pm2:restart": "pm2 restart facebook-share-booster",
-    "pm2:logs": "pm2 logs facebook-share-booster"
+    "pm2-start": "pm2 start index.js --name facebook-share-booster",
+    "pm2-stop": "pm2 stop facebook-share-booster",
+    "pm2-restart": "pm2 restart facebook-share-booster",
+    "pm2-logs": "pm2 logs facebook-share-booster"
   },
   "keywords": [
     "facebook",
     "share-bot",
-    "automation",
-    "social-media",
     "facebook-automation",
-    "share-automation",
-    "multi-cookie",
+    "social-media",
     "facebook-sharer",
-    "facebook-tool"
+    "auto-share",
+    "facebook-tool",
+    "vern-api",
+    "graph-api",
+    "share-booster"
   ],
   "author": "Facebook Share Booster",
   "license": "MIT",
