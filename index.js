@@ -6,55 +6,59 @@ const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const https = require('https');
 
 const app = express();
+
+// Configuration
+const SHARE_RATE = 5; // 5 shares per
+const RATE_INTERVAL = 2000; // 2 seconds
+const MAX_CONCURRENT = 10; // Max concurrent shares
 
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: false,
 }));
-app.use(compression()); // Compress responses
+app.use(compression());
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : '*',
+  origin: '*',
   credentials: true
 }));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: { status: false, message: 'Too many requests, please try again later.' }
+  windowMs: 60 * 1000,
+  max: 2000,
+  message: { status: false, message: 'Too many requests, please slow down.' }
 });
 
 app.use('/api/', limiter);
-
-// Middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Set view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// User agents list with rotation
+// User Agents pool
 const ua_list = [
-  "Mozilla/5.0 (Linux; Android 10; Wildfire E Lite) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/105.0.5195.136 Mobile Safari/537.36[FBAN/EMA;FBLC/en_US;FBAV/298.0.0.10.115;]",
-  "Mozilla/5.0 (Linux; Android 11; KINGKONG 5 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/87.0.4280.141 Mobile Safari/537.36[FBAN/EMA;FBLC/fr_FR;FBAV/320.0.0.12.108;]",
-  "Mozilla/5.0 (Linux; Android 11; G91 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/106.0.5249.126 Mobile Safari/537.36[FBAN/EMA;FBLC/fr_FR;FBAV/325.0.1.4.108;]"
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15"
 ];
 
-// In-memory store with persistence
+// Store active shares
 let shareHistory = [];
 let activeShares = new Map();
+let rateLimiterQueue = new Map();
 
-// Load history from file on startup
+// Load history
 (async () => {
   try {
     const data = await fs.readFile('./history.json', 'utf8');
     shareHistory = JSON.parse(data);
   } catch (err) {
-    console.log('No existing history found, starting fresh');
     shareHistory = [];
   }
 })();
@@ -66,64 +70,117 @@ setInterval(async () => {
   } catch (err) {
     console.error('Error saving history:', err);
   }
-}, 60000); // Save every minute
+}, 60000);
 
-// Token extraction function with retries
-async function extract_token(cookie, ua, retries = 3) {
-  for (let i = 0; i < retries; i++) {
+// Rate limiter for 5 shares per 2 seconds
+class ShareRateLimiter {
+  constructor() {
+    this.queue = [];
+    this.processing = false;
+    this.requestCount = 0;
+    this.lastReset = Date.now();
+  }
+
+  async addRequest(shareFn) {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ shareFn, resolve, reject });
+      this.processQueue();
+    });
+  }
+
+  async processQueue() {
+    if (this.processing) return;
+    this.processing = true;
+
+    while (this.queue.length > 0) {
+      const now = Date.now();
+      
+      // Reset counter every 2 seconds
+      if (now - this.lastReset >= RATE_INTERVAL) {
+        this.requestCount = 0;
+        this.lastReset = now;
+      }
+
+      // Check if we can send more requests
+      if (this.requestCount < SHARE_RATE) {
+        const { shareFn, resolve, reject } = this.queue.shift();
+        this.requestCount++;
+        
+        try {
+          const result = await shareFn();
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+        
+        // Small delay between requests in the same batch
+        if (this.requestCount < SHARE_RATE) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      } else {
+        // Wait for next interval
+        const waitTime = RATE_INTERVAL - (now - this.lastReset);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+    
+    this.processing = false;
+  }
+}
+
+const shareRateLimiter = new ShareRateLimiter();
+
+// Token extraction
+async function extract_token(cookie, ua) {
+  for (let i = 0; i < 3; i++) {
     try {
       const response = await axios.get(
         "https://business.facebook.com/business_locations",
         {
           headers: {
             "user-agent": ua,
+            "cookie": cookie,
             "referer": "https://www.facebook.com/",
-            "Cookie": cookie,
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "accept-language": "en-US,en;q=0.5",
+            "accept-language": "en-US,en;q=0.9",
             "accept-encoding": "gzip, deflate, br",
-            "dnt": "1",
-            "connection": "keep-alive",
-            "upgrade-insecure-requests": "1"
+            "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"Windows"',
+            "sec-fetch-dest": "document",
+            "sec-fetch-mode": "navigate",
+            "sec-fetch-site": "none",
+            "upgrade-insecure-requests": "1",
+            "connection": "keep-alive"
           },
           timeout: 15000,
           maxRedirects: 5
         }
       );
 
-      // Multiple token patterns for better extraction
       const patterns = [
         /(EAAG\w+)/,
         /(EAA[A-Za-z0-9]+)/,
         /access_token=([^&\s"]+)/
       ];
-      
+
       for (const pattern of patterns) {
         const match = response.data.match(pattern);
         if (match) return match[1];
       }
-      
+
       return null;
     } catch (err) {
-      console.error(`Token extraction attempt ${i + 1} failed:`, err.message);
-      if (i === retries - 1) return null;
-      await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1))); // Exponential backoff
+      if (i === 2) return null;
+      await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
     }
   }
 }
 
-// Async share function with better error handling
-async function performShare(post_link, token, cookie, ua, shareId, totalLimit) {
+// Fast share function (5 per 2 seconds)
+async function performFastShare(post_link, token, cookie, ua, shareId, totalLimit, updateCallback) {
   const results = [];
-  const startTime = Date.now();
-  
-  for (let i = 0; i < totalLimit; i++) {
-    // Check if share was cancelled
-    if (activeShares.get(shareId) === 'cancelled') {
-      console.log(`Share ${shareId} was cancelled`);
-      break;
-    }
-
+  const shareFn = async () => {
     try {
       const response = await axios.post(
         "https://graph.facebook.com/v18.0/me/feed",
@@ -136,101 +193,106 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit) {
           },
           headers: {
             "user-agent": ua,
-            "Cookie": cookie,
+            "cookie": cookie,
             "accept": "application/json, text/plain, */*",
             "accept-language": "en-US,en;q=0.9",
+            "content-type": "application/x-www-form-urlencoded",
             "origin": "https://business.facebook.com",
             "referer": "https://business.facebook.com/"
           },
-          timeout: 15000
+          timeout: 10000
         }
       );
 
       if (response.data && response.data.id) {
-        results.push({ success: true, id: response.data.id });
-        
-        // Update progress
-        const item = shareHistory.find(h => h.id === shareId);
-        if (item) {
-          item.success = results.length;
-          item.progress = Math.round((results.length / totalLimit) * 100);
-        }
+        return { success: true, id: response.data.id };
       }
-      
-      // Small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 500));
-      
+      return { success: false, error: 'No ID returned' };
     } catch (err) {
-      console.error(`Share attempt ${i + 1} failed:`, err.message);
-      results.push({ success: false, error: err.message });
+      return { success: false, error: err.message };
+    }
+  };
+
+  for (let i = 0; i < totalLimit; i++) {
+    if (activeShares.get(shareId) === 'cancelled') {
+      break;
+    }
+
+    try {
+      const result = await shareRateLimiter.addRequest(shareFn);
+      results.push(result);
       
-      // If rate limited, wait longer
-      if (err.response && err.response.status === 429) {
-        await new Promise(resolve => setTimeout(resolve, 10000));
+      // Update progress
+      const successCount = results.filter(r => r.success).length;
+      const failedCount = results.filter(r => !r.success).length;
+      
+      if (updateCallback) {
+        updateCallback({
+          completed: i + 1,
+          success: successCount,
+          failed: failedCount,
+          progress: Math.round(((i + 1) / totalLimit) * 100)
+        });
       }
-      
-      // Don't break immediately, try to continue
+    } catch (err) {
+      results.push({ success: false, error: err.message });
+      if (updateCallback) {
+        updateCallback({
+          completed: i + 1,
+          success: results.filter(r => r.success).length,
+          failed: results.filter(r => !r.success).length,
+          progress: Math.round(((i + 1) / totalLimit) * 100)
+        });
+      }
     }
   }
-  
-  const endTime = Date.now();
-  const duration = (endTime - startTime) / 1000; // in seconds
-  
+
   return {
     success: results.filter(r => r.success).length,
     failed: results.filter(r => !r.success).length,
     total: results.length,
-    duration
+    results: results
   };
 }
 
-// Routes
+// ============= UI ROUTES =============
+
+// Home page
 app.get("/", (req, res) => {
-  res.render("index", { 
-    title: 'Facebook Share Tool',
-    year: new Date().getFullYear()
-  });
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Share page
 app.get("/share", (req, res) => {
-  res.render("share", { 
-    history: shareHistory.slice(-20).reverse(),
-    title: 'Share History',
-    year: new Date().getFullYear()
-  });
+  res.sendFile(path.join(__dirname, 'public', 'share.html'));
 });
 
-// API endpoint for sharing
+// API Documentation page
+app.get("/api-docs", (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
+});
+
+// ============= API ROUTES =============
+
+// Start sharing
 app.post("/api/share", async (req, res) => {
-  const shareId = Date.now();
-  
+  const shareId = Date.now().toString();
+
   try {
     const { cookie, link: post_link, limit } = req.body;
     const limitNum = parseInt(limit, 10);
 
-    // Enhanced validation
     if (!cookie || !post_link || !limitNum) {
       return res.status(400).json({
         status: false,
-        message: "Missing required fields: cookie, link, and limit are required.",
-        code: 'MISSING_FIELDS'
+        message: "Missing required fields: cookie, link, and limit are required."
       });
     }
 
-    if (limitNum > 1000) {
+    if (limitNum < 1 || limitNum > 5000) {
       return res.status(400).json({
         status: false,
-        message: "Maximum limit is 1000 shares per request.",
-        code: 'LIMIT_EXCEEDED'
-      });
-    }
-
-    // Validate cookie format (basic check)
-    if (!cookie.includes('=')) {
-      return res.status(400).json({
-        status: false,
-        message: "Invalid cookie format.",
-        code: 'INVALID_COOKIE'
+        message: "Limit must be between 1 and 5000 shares."
       });
     }
 
@@ -240,34 +302,39 @@ app.post("/api/share", async (req, res) => {
     } catch {
       return res.status(400).json({
         status: false,
-        message: "Invalid URL format.",
-        code: 'INVALID_URL'
+        message: "Invalid URL format."
       });
     }
 
     const ua = ua_list[Math.floor(Math.random() * ua_list.length)];
-    
-    // Extract token with progress
+
+    // Send immediate response
     res.json({
       status: 'processing',
-      message: 'Extracting token...',
-      share_id: shareId,
-      stage: 'token_extraction'
+      message: 'Starting share process...',
+      share_id: shareId
     });
 
+    // Extract token
     const token = await extract_token(cookie, ua);
 
     if (!token) {
-      return res.status(400).json({
-        status: false,
-        message: "Token extraction failed. Check your cookie validity.",
-        code: 'TOKEN_EXTRACTION_FAILED'
-      });
+      const historyEntry = {
+        id: shareId,
+        link: post_link,
+        requested: limitNum,
+        success: 0,
+        failed: 0,
+        status: 'failed',
+        error: 'Token extraction failed',
+        startTime: new Date(),
+        endTime: new Date()
+      };
+      shareHistory.push(historyEntry);
+      return;
     }
 
-    const startTime = new Date();
-
-    // Save initial history
+    // Create history entry
     const historyEntry = {
       id: shareId,
       link: post_link,
@@ -276,62 +343,63 @@ app.post("/api/share", async (req, res) => {
       failed: 0,
       status: 'processing',
       progress: 0,
-      startTime,
+      startTime: new Date(),
       endTime: null,
-      token
+      token: token.substring(0, 20) + '...'
     };
-    
+
     shareHistory.push(historyEntry);
     activeShares.set(shareId, 'active');
 
-    // Perform sharing asynchronously
-    const shareResults = await performShare(post_link, token, cookie, ua, shareId, limitNum);
+    // Perform fast sharing
+    const updateCallback = (update) => {
+      const entry = shareHistory.find(h => h.id === shareId);
+      if (entry) {
+        entry.success = update.success;
+        entry.failed = update.failed;
+        entry.progress = update.progress;
+      }
+    };
 
-    // Finalize history
-    const finalItem = shareHistory.find(item => item.id === shareId);
-    if (finalItem) {
-      finalItem.status = shareResults.success > 0 ? 'completed' : 'failed';
-      finalItem.endTime = new Date();
-      finalItem.success = shareResults.success;
-      finalItem.failed = shareResults.failed;
-      finalItem.duration = shareResults.duration;
+    const shareResults = await performFastShare(
+      post_link, token, cookie, ua, shareId, limitNum, updateCallback
+    );
+
+    // Finalize
+    const finalEntry = shareHistory.find(h => h.id === shareId);
+    if (finalEntry) {
+      finalEntry.status = shareResults.success > 0 ? 'completed' : 'failed';
+      finalEntry.endTime = new Date();
+      finalEntry.success = shareResults.success;
+      finalEntry.failed = shareResults.failed;
+      finalEntry.progress = 100;
     }
-    
+
     activeShares.delete(shareId);
 
-    // Keep only last 100 entries
-    if (shareHistory.length > 100) {
-      shareHistory = shareHistory.slice(-100);
+    // Keep last 200 entries
+    if (shareHistory.length > 200) {
+      shareHistory = shareHistory.slice(-200);
     }
-
-    // Send final response through WebSocket or polling will get the final result
-    // For now, we'll just return the initial response
 
   } catch (error) {
     console.error('API Error:', error);
     activeShares.delete(shareId);
-    
-    res.status(500).json({
-      status: false,
-      message: 'Server error occurred. Please try again.',
-      code: 'SERVER_ERROR',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
   }
 });
 
 // Get share progress
 app.get("/api/share/:id/progress", (req, res) => {
-  const shareId = parseInt(req.params.id);
+  const shareId = req.params.id;
   const share = shareHistory.find(h => h.id === shareId);
-  
+
   if (!share) {
     return res.status(404).json({
       status: false,
       message: 'Share not found'
     });
   }
-  
+
   res.json({
     status: true,
     share: {
@@ -341,15 +409,17 @@ app.get("/api/share/:id/progress", (req, res) => {
       failed: share.failed || 0,
       requested: share.requested,
       status: share.status,
-      active: activeShares.has(shareId)
+      active: activeShares.has(shareId),
+      startTime: share.startTime,
+      endTime: share.endTime
     }
   });
 });
 
 // Cancel share
 app.post("/api/share/:id/cancel", (req, res) => {
-  const shareId = parseInt(req.params.id);
-  
+  const shareId = req.params.id;
+
   if (activeShares.has(shareId)) {
     activeShares.set(shareId, 'cancelled');
     
@@ -358,7 +428,7 @@ app.post("/api/share/:id/cancel", (req, res) => {
       share.status = 'cancelled';
       share.endTime = new Date();
     }
-    
+
     res.json({
       status: true,
       message: 'Share cancelled successfully'
@@ -373,7 +443,7 @@ app.post("/api/share/:id/cancel", (req, res) => {
 
 // Share history
 app.get("/api/history", (req, res) => {
-  const limit = parseInt(req.query.limit) || 20;
+  const limit = parseInt(req.query.limit) || 50;
   res.json({
     status: true,
     history: shareHistory.slice(-limit).reverse()
@@ -397,10 +467,11 @@ app.get("/api/stats", (req, res) => {
   const totalSuccess = shareHistory.reduce((acc, curr) => acc + (curr.success || 0), 0);
   const totalFailed = shareHistory.reduce((acc, curr) => acc + (curr.failed || 0), 0);
   const completedShares = shareHistory.filter(s => s.status === 'completed').length;
+  
   const successRate = totalShares > 0 
     ? Math.round((completedShares / totalShares) * 100) 
     : 0;
-  
+
   res.json({
     status: true,
     stats: {
@@ -409,7 +480,8 @@ app.get("/api/stats", (req, res) => {
       total_failed_shares: totalFailed,
       completed_shares: completedShares,
       success_rate: successRate,
-      active_shares: activeShares.size
+      active_shares: activeShares.size,
+      rate: `${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds`
     }
   });
 });
@@ -420,22 +492,34 @@ app.get("/api/health", (req, res) => {
     status: true,
     message: 'Server is running',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    active_shares: activeShares.size
   });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
+// ============= ERROR PAGES =============
+
+// 404 Error page
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
+
+// 500 Error page
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM signal received: closing HTTP server');
-  app.close(() => {
-    console.log('HTTP server closed');
-    // Save history before exit
-    fs.writeFileSync('./history.json', JSON.stringify(shareHistory, null, 2));
-  });
+  process.exit(0);
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Share rate: ${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds`);
+  console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
 });
