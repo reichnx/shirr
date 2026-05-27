@@ -132,6 +132,11 @@
             color: #00ff88;
             border: 1px solid rgba(0, 255, 0, 0.3);
         }
+        .method-delete {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6666;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
         .endpoint-url {
             font-family: monospace;
             font-size: 0.7rem;
@@ -206,7 +211,7 @@
             color: rgba(255, 255, 255, 0.6);
         }
         @media (min-width: 768px) {
-            .container { max-width: 600px; margin: 0 auto; }
+            .container { max-width: 700px; margin: 0 auto; }
         }
     </style>
 </head>
@@ -226,26 +231,29 @@
         <div class="glass-card">
             <div class="api-header">
                 <h1><i class="fas fa-code"></i> API Reference</h1>
-                <p>REST API endpoints for Facebook Share Booster</p>
+                <p>Complete REST API for Facebook Share Booster</p>
                 <p style="font-size:0.7rem; margin-top:0.3rem;">Base URL: http://localhost:5000/api/</p>
             </div>
         </div>
 
+        <!-- Share Operations -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-share-alt"></i> Share Operations</div>
             
             <div class="endpoint-card">
                 <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/share</span></div>
-                <div class="description">Start a new share campaign (5 shares per 2 seconds)</div>
+                <div class="description">Start a new share campaign (supports single or multiple cookies)</div>
                 <div class="param-details">
-                    <div class="param-item"><span class="param-name">cookie</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
+                    <div class="param-item"><span class="param-name">cookies</span><span class="param-type">array <span class="badge badge-required">required</span></span></div>
                     <div class="param-item"><span class="param-name">link</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
                     <div class="param-item"><span class="param-name">limit</span><span class="param-type">integer <span class="badge badge-required">required</span></span></div>
+                    <div class="param-item"><span class="param-name">useMultipleCookies</span><span class="param-type">boolean optional</span></div>
                 </div>
                 <div class="code-block">{
-  "cookie": "c_user=123456; xs=abcdef",
+  "cookies": ["c_user=123; xs=abc", "c_user=456; xs=def"],
   "link": "https://facebook.com/post/123",
-  "limit": 100
+  "limit": 100,
+  "useMultipleCookies": true
 }</div>
             </div>
 
@@ -262,46 +270,82 @@
             </div>
         </div>
 
+        <!-- Cookie Management -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-cookie-bite"></i> Cookie Management</div>
+            
+            <div class="endpoint-card">
+                <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/cookies/save</span></div>
+                <div class="description">Save multiple cookies for future use</div>
+                <div class="code-block">{"cookies": ["cookie1", "cookie2", "cookie3"]}</div>
+            </div>
+
+            <div class="endpoint-card">
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/cookies</span></div>
+                <div class="description">Get all saved cookies</div>
+            </div>
+
+            <div class="endpoint-card">
+                <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/cookies/add</span></div>
+                <div class="description">Add a single cookie</div>
+                <div class="code-block">{"cookie": "c_user=123; xs=abc"}</div>
+            </div>
+
+            <div class="endpoint-card">
+                <div><span class="method-badge method-delete">DELETE</span><span class="endpoint-url">/cookies/remove/:index</span></div>
+                <div class="description">Remove a saved cookie by index</div>
+            </div>
+        </div>
+
+        <!-- Data Endpoints -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-database"></i> Data & Stats</div>
             
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/history?limit=20</span></div>
                 <div class="description">View share history</div>
-                <div class="code-block">GET /api/history?limit=20</div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/stats</span></div>
-                <div class="description">Get system statistics</div>
-                <div class="code-block">GET /api/stats</div>
+                <div class="description">Get system statistics including saved cookies count</div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/running-shares</span></div>
                 <div class="description">List active campaigns</div>
-                <div class="code-block">GET /api/running-shares</div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/health</span></div>
                 <div class="description">Health check endpoint</div>
-                <div class="code-block">GET /api/health</div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/tiktok-video</span></div>
-                <div class="description">Fetch random TikTok video</div>
-                <div class="code-block">GET /api/tiktok-video</div>
+                <div class="description">Fetch random TikTok video for dashboard</div>
             </div>
         </div>
 
+        <!-- Error Codes -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-exclamation-triangle"></i> Error Codes</div>
             <div class="error-item"><span class="error-code">400</span><span class="error-desc">Bad Request - Invalid parameters</span></div>
-            <div class="error-item"><span class="error-code">404</span><span class="error-desc">Not Found - Campaign not found</span></div>
+            <div class="error-item"><span class="error-code">404</span><span class="error-desc">Not Found - Campaign or cookie not found</span></div>
             <div class="error-item"><span class="error-code">429</span><span class="error-desc">Too Many Requests - Slow down</span></div>
             <div class="error-item"><span class="error-code">500</span><span class="error-desc">Internal Server Error</span></div>
+        </div>
+
+        <!-- Features -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-star"></i> Features</div>
+            <div class="description">
+                <p>✅ <strong>Multi-Cookie Support</strong> - Share across multiple Facebook accounts (round-robin)</p>
+                <p>✅ <strong>High Speed</strong> - 10 shares per second</p>
+                <p>✅ <strong>10,000 Limit</strong> - Share up to 10,000 times per campaign</p>
+                <p>✅ <strong>Auto Token Extraction</strong> - No manual token needed</p>
+                <p>✅ <strong>Cookie Management</strong> - Save and manage multiple cookies</p>
+            </div>
         </div>
     </div>
 </body>
