@@ -122,6 +122,11 @@
             font-family: monospace;
             margin-right: 0.6rem;
         }
+        .method-post {
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
         .method-get {
             background: rgba(0, 255, 0, 0.2);
             color: #00ff88;
@@ -221,7 +226,7 @@
         <div class="glass-card">
             <div class="api-header">
                 <h1><i class="fas fa-code"></i> API Reference</h1>
-                <p>All endpoints use GET method with query parameters</p>
+                <p>REST API endpoints for Facebook Share Booster</p>
                 <p style="font-size:0.7rem; margin-top:0.3rem;">Base URL: http://localhost:5000/api/</p>
             </div>
         </div>
@@ -230,32 +235,30 @@
             <div class="section-title"><i class="fas fa-share-alt"></i> Share Operations</div>
             
             <div class="endpoint-card">
-                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/share?cookie=...&link=...&amount=...</span></div>
-                <div class="description">Start a new share campaign</div>
+                <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/share</span></div>
+                <div class="description">Start a new share campaign (5 shares per 2 seconds)</div>
                 <div class="param-details">
                     <div class="param-item"><span class="param-name">cookie</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
                     <div class="param-item"><span class="param-name">link</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
-                    <div class="param-item"><span class="param-name">amount</span><span class="param-type">integer <span class="badge badge-required">required</span></span></div>
+                    <div class="param-item"><span class="param-name">limit</span><span class="param-type">integer <span class="badge badge-required">required</span></span></div>
                 </div>
-                <div class="code-block">GET /api/share?cookie=c_user=123; xs=abc&amp;link=https://facebook.com/post&amp;amount=100</div>
+                <div class="code-block">{
+  "cookie": "c_user=123456; xs=abcdef",
+  "link": "https://facebook.com/post/123",
+  "limit": 100
+}</div>
             </div>
 
             <div class="endpoint-card">
-                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/share/progress?id=...</span></div>
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/share/:id/progress</span></div>
                 <div class="description">Monitor campaign progress</div>
-                <div class="param-details">
-                    <div class="param-item"><span class="param-name">id</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
-                </div>
-                <div class="code-block">GET /api/share/progress?id=1706123456789</div>
+                <div class="code-block">GET /api/share/1706123456789/progress</div>
             </div>
 
             <div class="endpoint-card">
-                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/share/cancel?id=...</span></div>
+                <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/share/:id/cancel</span></div>
                 <div class="description">Cancel active campaign</div>
-                <div class="param-details">
-                    <div class="param-item"><span class="param-name">id</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
-                </div>
-                <div class="code-block">GET /api/share/cancel?id=1706123456789</div>
+                <div class="code-block">POST /api/share/1706123456789/cancel</div>
             </div>
         </div>
 
@@ -288,7 +291,7 @@
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/tiktok-video</span></div>
-                <div class="description">Fetch random TikTok video (Dashboard only)</div>
+                <div class="description">Fetch random TikTok video</div>
                 <div class="code-block">GET /api/tiktok-video</div>
             </div>
         </div>
