@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Facebook Share Booster - API Docs</title>
+    <title>Facebook Share Booster - API Documentation</title>
     <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23667eea'/%3E%3Ctext x='50' y='68' font-size='50' text-anchor='middle' fill='white' font-weight='bold'%3EFS%3C/text%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -78,6 +78,10 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 1rem;
             margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.12);
         }
         .api-header {
             text-align: center;
@@ -112,6 +116,10 @@
             padding: 0.8rem;
             margin-bottom: 0.8rem;
             border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s;
+        }
+        .endpoint-card:hover {
+            border-color: rgba(102, 126, 234, 0.3);
         }
         .method-badge {
             display: inline-block;
@@ -175,6 +183,10 @@
             background: rgba(255, 0, 0, 0.2);
             color: #ff8888;
         }
+        .badge-optional {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffaa44;
+        }
         .code-block {
             background: rgba(0, 0, 0, 0.5);
             padding: 0.6rem;
@@ -205,8 +217,15 @@
             font-size: 0.7rem;
             color: rgba(255, 255, 255, 0.6);
         }
+        .api-info {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 3px solid #667eea;
+            padding: 0.5rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+        }
         @media (min-width: 768px) {
-            .container { max-width: 600px; margin: 0 auto; }
+            .container { max-width: 700px; margin: 0 auto; }
         }
     </style>
 </head>
@@ -216,7 +235,7 @@
             <div class="logo"><i class="fab fa-facebook"></i><span>Facebook Share Booster</span></div>
             <div class="nav-links">
                 <a href="/"><i class="fas fa-home"></i> Home</a>
-                <a href="/share.html"><i class="fas fa-share-alt"></i> Share</a>
+                <a href="/share"><i class="fas fa-share-alt"></i> Share</a>
                 <a href="/api-docs" class="active"><i class="fas fa-code"></i> API</a>
             </div>
         </div>
@@ -226,82 +245,127 @@
         <div class="glass-card">
             <div class="api-header">
                 <h1><i class="fas fa-code"></i> API Reference</h1>
-                <p>REST API endpoints for Facebook Share Booster</p>
-                <p style="font-size:0.7rem; margin-top:0.3rem;">Base URL: http://localhost:5000/api/</p>
+                <p>Complete REST API documentation for Facebook Share Booster</p>
+                <p style="font-size:0.7rem; margin-top:0.3rem;">
+                    <i class="fas fa-globe"></i> Base URL: <span style="color:#667eea;">http://localhost:5000/api/</span>
+                </p>
             </div>
         </div>
 
+        <!-- API Information -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-server"></i> API Information</div>
+            <div class="api-info">
+                <i class="fas fa-check-circle" style="color:#00ff88;"></i> <strong>Primary API:</strong> SHIR API (https://shir-api.onrender.com)<br>
+                <i class="fas fa-exchange-alt" style="color:#ffa500;"></i> <strong>Fallback API:</strong> Vern API (auto-switch after 2 failures)<br>
+                <i class="fas fa-chart-line"></i> <strong>Max Shares:</strong> 1,000 per campaign
+            </div>
+        </div>
+
+        <!-- Share Operations -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-share-alt"></i> Share Operations</div>
             
             <div class="endpoint-card">
                 <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/share</span></div>
-                <div class="description">Start a new share campaign</div>
+                <div class="description">Start a new share campaign. Automatically switches to fallback API if primary fails.</div>
                 <div class="param-details">
                     <div class="param-item"><span class="param-name">cookie</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
                     <div class="param-item"><span class="param-name">link</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
                     <div class="param-item"><span class="param-name">limit</span><span class="param-type">integer <span class="badge badge-required">required</span> (max: 1000)</span></div>
                 </div>
-                <div class="code-block">{
-  "cookie": "c_user=123; xs=abc",
-  "link": "https://facebook.com/post",
+                <div class="code-block">
+{
+  "cookie": "c_user=123456789; xs=abcdef123",
+  "link": "https://www.facebook.com/post/123",
   "limit": 100
-}</div>
+}
+                </div>
+                <div class="code-block" style="margin-top:0.5rem;">
+Response: { "status": "processing", "share_id": "1706123456789" }
+                </div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/share/:id/progress</span></div>
-                <div class="description">Monitor campaign progress</div>
+                <div class="description">Get real-time progress of a share campaign.</div>
                 <div class="code-block">GET /api/share/1706123456789/progress</div>
+                <div class="code-block" style="margin-top:0.5rem;">
+Response: {
+  "status": true,
+  "share": {
+    "progress": 45,
+    "success": 45,
+    "failed": 0,
+    "status": "processing"
+  }
+}
+                </div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/share/:id/cancel</span></div>
-                <div class="description">Cancel active campaign</div>
+                <div class="description">Cancel an active share campaign.</div>
                 <div class="code-block">POST /api/share/1706123456789/cancel</div>
             </div>
         </div>
 
+        <!-- Data & Statistics -->
         <div class="glass-card">
-            <div class="section-title"><i class="fas fa-database"></i> Data & Stats</div>
-            
+            <div class="section-title"><i class="fas fa-database"></i> Data & Statistics</div>
+
             <div class="endpoint-card">
-                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/history?limit=20</span></div>
-                <div class="description">View share history</div>
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/history</span></div>
+                <div class="description">View share campaign history.</div>
+                <div class="param-details">
+                    <div class="param-item"><span class="param-name">limit</span><span class="param-type">integer <span class="badge badge-optional">optional</span> (default: 50)</span></div>
+                </div>
                 <div class="code-block">GET /api/history?limit=20</div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/stats</span></div>
-                <div class="description">Get system statistics</div>
+                <div class="description">Get overall system statistics.</div>
                 <div class="code-block">GET /api/stats</div>
+                <div class="code-block" style="margin-top:0.5rem;">
+Response: {
+  "total_shares": 1250,
+  "total_successful_shares": 1180,
+  "success_rate": 94,
+  "active_shares": 2,
+  "max_limit": 1000,
+  "primary_api": "https://shir-api.onrender.com/api/shirr",
+  "fallback_api": "https://vern-rest-api.vercel.app/api/share"
+}
+                </div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/running-shares</span></div>
-                <div class="description">List active campaigns</div>
+                <div class="description">List all currently active share campaigns.</div>
                 <div class="code-block">GET /api/running-shares</div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/health</span></div>
-                <div class="description">Health check endpoint</div>
+                <div class="description">Health check endpoint for monitoring.</div>
                 <div class="code-block">GET /api/health</div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/tiktok-video</span></div>
-                <div class="description">Fetch random TikTok video</div>
+                <div class="description">Fetch random TikTok video for dashboard feed.</div>
                 <div class="code-block">GET /api/tiktok-video</div>
             </div>
         </div>
 
+        <!-- Error Codes -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-exclamation-triangle"></i> Error Codes</div>
-            <div class="error-item"><span class="error-code">400</span><span class="error-desc">Bad Request - Invalid parameters</span></div>
-            <div class="error-item"><span class="error-code">404</span><span class="error-desc">Not Found - Campaign not found</span></div>
-            <div class="error-item"><span class="error-code">429</span><span class="error-desc">Too Many Requests - Slow down</span></div>
-            <div class="error-item"><span class="error-code">500</span><span class="error-desc">Internal Server Error</span></div>
+            <div class="error-item"><span class="error-code">400</span><span class="error-desc">Bad Request - Missing or invalid parameters</span></div>
+            <div class="error-item"><span class="error-code">404</span><span class="error-desc">Not Found - Campaign or resource not found</span></div>
+            <div class="error-item"><span class="error-code">429</span><span class="error-desc">Too Many Requests - Rate limit exceeded</span></div>
+            <div class="error-item"><span class="error-code">500</span><span class="error-desc">Internal Server Error - Something went wrong</span></div>
         </div>
     </div>
 </body>
