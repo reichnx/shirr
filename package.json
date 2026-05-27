@@ -1,7 +1,7 @@
 {
   "name": "facebook-share-booster",
-  "version": "2.0.0",
-  "description": "Advanced Facebook Share Bot with 1000 shares limit, fallback API, and modern UI",
+  "version": "3.0.0",
+  "description": "Advanced Facebook Share Bot with SHIR API (primary) and Vern API (fallback), 1000 shares limit, and modern glassmorphism UI",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -15,7 +15,9 @@
     "social-media",
     "facebook-automation",
     "share-automation",
-    "facebook-sharer"
+    "facebook-sharer",
+    "shir-api",
+    "vern-api"
   ],
   "author": "Facebook Share Booster",
   "license": "MIT",
