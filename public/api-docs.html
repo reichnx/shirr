@@ -9,14 +9,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             color: #fff;
         }
-
         .navbar {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px);
@@ -25,7 +23,6 @@
             top: 0;
             z-index: 1000;
         }
-
         .nav-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -36,7 +33,6 @@
             flex-wrap: wrap;
             gap: 0.5rem;
         }
-
         .logo {
             font-size: 1.1rem;
             font-weight: 800;
@@ -48,14 +44,12 @@
             align-items: center;
             gap: 0.3rem;
         }
-
         .nav-links {
             display: flex;
             gap: 0.5rem;
             align-items: center;
             flex-wrap: wrap;
         }
-
         .nav-links a {
             text-decoration: none;
             color: rgba(255, 255, 255, 0.7);
@@ -68,19 +62,15 @@
             border-radius: 10px;
             font-size: 0.8rem;
         }
-
         .nav-links a:hover, .nav-links a.active {
             color: #fff;
             background: rgba(255, 255, 255, 0.15);
         }
-
         .container {
             max-width: 100%;
             margin: 0 auto;
             padding: 1rem;
         }
-
-        /* Glassmorphism Cards - Mobile First */
         .glass-card {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
@@ -89,12 +79,10 @@
             padding: 1rem;
             margin-bottom: 1rem;
         }
-
         .api-header {
             text-align: center;
             margin-bottom: 1rem;
         }
-
         .api-header h1 {
             font-size: 1.5rem;
             background: linear-gradient(135deg, #fff, #667eea);
@@ -103,12 +91,10 @@
             color: transparent;
             margin-bottom: 0.3rem;
         }
-
         .api-header p {
             font-size: 0.75rem;
             color: rgba(255, 255, 255, 0.5);
         }
-
         .section-title {
             font-size: 1rem;
             font-weight: 700;
@@ -120,8 +106,6 @@
             border-left: 3px solid #667eea;
             padding-left: 0.8rem;
         }
-
-        /* Mobile-optimized endpoint cards */
         .endpoint-card {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 16px;
@@ -129,7 +113,6 @@
             margin-bottom: 0.8rem;
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
-
         .method-badge {
             display: inline-block;
             padding: 0.2rem 0.6rem;
@@ -139,58 +122,43 @@
             font-family: monospace;
             margin-right: 0.6rem;
         }
-
         .method-get {
             background: rgba(0, 255, 0, 0.2);
             color: #00ff88;
             border: 1px solid rgba(0, 255, 0, 0.3);
         }
-
-        .method-post {
-            background: rgba(0, 255, 255, 0.2);
-            color: #00ffff;
-            border: 1px solid rgba(0, 255, 255, 0.3);
-        }
-
         .endpoint-url {
             font-family: monospace;
             font-size: 0.7rem;
             color: rgba(255, 255, 255, 0.8);
             word-break: break-all;
         }
-
         .description {
             color: rgba(255, 255, 255, 0.6);
             font-size: 0.75rem;
             margin: 0.5rem 0;
         }
-
-        /* Collapsible details for mobile */
         .param-details {
             margin-top: 0.6rem;
             padding-top: 0.6rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .param-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.4rem 0;
+            padding: 0.3rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.7rem;
         }
-
         .param-name {
             font-weight: 600;
             color: #667eea;
         }
-
         .param-type {
             color: rgba(255, 255, 255, 0.5);
             font-size: 0.65rem;
         }
-
         .badge {
             display: inline-block;
             padding: 0.15rem 0.4rem;
@@ -198,12 +166,10 @@
             font-size: 0.6rem;
             font-weight: 600;
         }
-
         .badge-required {
             background: rgba(255, 0, 0, 0.2);
             color: #ff8888;
         }
-
         .code-block {
             background: rgba(0, 0, 0, 0.5);
             padding: 0.6rem;
@@ -216,13 +182,6 @@
             white-space: pre-wrap;
             word-break: break-word;
         }
-
-        .grid-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
         .error-item {
             display: flex;
             justify-content: space-between;
@@ -232,25 +191,17 @@
             border-radius: 10px;
             margin-bottom: 0.4rem;
         }
-
         .error-code {
             font-weight: 700;
             color: #ff6666;
             font-size: 0.8rem;
         }
-
         .error-desc {
             font-size: 0.7rem;
             color: rgba(255, 255, 255, 0.6);
         }
-
-        hr {
-            border-color: rgba(255, 255, 255, 0.1);
-            margin: 0.5rem 0;
-        }
-
         @media (min-width: 768px) {
-            .container { max-width: 500px; margin: 0 auto; }
+            .container { max-width: 600px; margin: 0 auto; }
         }
     </style>
 </head>
@@ -270,64 +221,78 @@
         <div class="glass-card">
             <div class="api-header">
                 <h1><i class="fas fa-code"></i> API Reference</h1>
-                <p>REST API endpoints for Facebook Share Booster</p>
+                <p>All endpoints use GET method with query parameters</p>
+                <p style="font-size:0.7rem; margin-top:0.3rem;">Base URL: http://localhost:5000/api/</p>
             </div>
         </div>
 
-        <!-- Share Operations -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-share-alt"></i> Share Operations</div>
             
             <div class="endpoint-card">
-                <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/api/share</span></div>
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/share?cookie=...&link=...&amount=...</span></div>
                 <div class="description">Start a new share campaign</div>
                 <div class="param-details">
                     <div class="param-item"><span class="param-name">cookie</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
                     <div class="param-item"><span class="param-name">link</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
-                    <div class="param-item"><span class="param-name">limit</span><span class="param-type">integer <span class="badge badge-required">required</span></span></div>
+                    <div class="param-item"><span class="param-name">amount</span><span class="param-type">integer <span class="badge badge-required">required</span></span></div>
                 </div>
-                <div class="code-block">{<br>  "cookie": "c_user=...; xs=...",<br>  "link": "https://facebook.com/post",<br>  "limit": 100<br>}</div>
+                <div class="code-block">GET /api/share?cookie=c_user=123; xs=abc&amp;link=https://facebook.com/post&amp;amount=100</div>
             </div>
 
             <div class="endpoint-card">
-                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/api/share/:id/progress</span></div>
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/share/progress?id=...</span></div>
                 <div class="description">Monitor campaign progress</div>
-                <div class="code-block">Response: { "progress": 45, "success": 45, "status": "processing" }</div>
+                <div class="param-details">
+                    <div class="param-item"><span class="param-name">id</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
+                </div>
+                <div class="code-block">GET /api/share/progress?id=1706123456789</div>
             </div>
 
             <div class="endpoint-card">
-                <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/api/share/:id/cancel</span></div>
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/share/cancel?id=...</span></div>
                 <div class="description">Cancel active campaign</div>
+                <div class="param-details">
+                    <div class="param-item"><span class="param-name">id</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
+                </div>
+                <div class="code-block">GET /api/share/cancel?id=1706123456789</div>
             </div>
         </div>
 
-        <!-- Data Endpoints -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-database"></i> Data & Stats</div>
             
             <div class="endpoint-card">
-                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/api/history</span></div>
-                <div class="description">View share history (limit: 20)</div>
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/history?limit=20</span></div>
+                <div class="description">View share history</div>
+                <div class="code-block">GET /api/history?limit=20</div>
             </div>
 
             <div class="endpoint-card">
-                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/api/stats</span></div>
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/stats</span></div>
                 <div class="description">Get system statistics</div>
-                <div class="code-block">Response: { "total_shares": 1250, "success_rate": 94 }</div>
+                <div class="code-block">GET /api/stats</div>
             </div>
 
             <div class="endpoint-card">
-                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/api/running-shares</span></div>
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/running-shares</span></div>
                 <div class="description">List active campaigns</div>
+                <div class="code-block">GET /api/running-shares</div>
             </div>
 
             <div class="endpoint-card">
-                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/api/health</span></div>
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/health</span></div>
                 <div class="description">Health check endpoint</div>
+                <div class="code-block">GET /api/health</div>
+            </div>
+
+            <div class="endpoint-card">
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/tiktok-video</span></div>
+                <div class="description">Fetch random TikTok video (Dashboard only)</div>
+                <div class="code-block">GET /api/tiktok-video</div>
             </div>
         </div>
 
-        <!-- Error Codes -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-exclamation-triangle"></i> Error Codes</div>
             <div class="error-item"><span class="error-code">400</span><span class="error-desc">Bad Request - Invalid parameters</span></div>
