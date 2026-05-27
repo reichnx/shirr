@@ -339,6 +339,16 @@
             cursor: pointer;
             font-size: 0.75rem;
         }
+        .dual-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(102, 126, 234, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+        }
         @media (max-width: 1024px) {
             .dashboard-grid { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -388,9 +398,10 @@
                 </div>
                 <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
                     <div class="section-title" style="margin-bottom: 0.5rem;"><i class="fas fa-info-circle"></i> System Info</div>
-                    <p style="font-size: 0.75rem; color: rgba(255,255,255,0.6);"><i class="fas fa-tachometer-alt"></i> Dual API Support: Main + Vern</p>
-                    <p style="font-size: 0.75rem; color: rgba(255,255,255,0.6);"><i class="fas fa-bolt"></i> Fast Sharing: 10 shares/2 seconds</p>
+                    <p style="font-size: 0.75rem; color: rgba(255,255,255,0.6);"><i class="fas fa-tachometer-alt"></i> Dual API Parallel Processing</p>
+                    <p style="font-size: 0.75rem; color: rgba(255,255,255,0.6);"><i class="fas fa-bolt"></i> Fast Sharing: 20 shares/2 seconds</p>
                     <p style="font-size: 0.75rem; color: rgba(255,255,255,0.6);"><i class="fas fa-chart-line"></i> Max Limit: 1000 shares</p>
+                    <div class="dual-badge"><i class="fas fa-fire"></i> Main API + Vern API Running Simultaneously</div>
                 </div>
             </div>
         </div>
@@ -399,8 +410,8 @@
             <div class="section-title"><i class="fas fa-history"></i> Recent History</div>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>ID</th><th>LINK</th><th>RESULTS</th><th>STATUS</th><th>API</th><th>PROGRESS</th><th>DATE</th></tr></thead>
-                    <tbody id="historyBody"><tr><td colspan="7" class="loading"><div class="spinner"></div>Loading...</td></tr></tbody>
+                    <thead><tr><th>ID</th><th>LINK</th><th>RESULTS</th><th>STATUS</th><th>PROGRESS</th><th>DATE</th></tr></thead>
+                    <tbody id="historyBody"><tr><td colspan="6" class="loading"><div class="spinner"></div>Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -471,16 +482,15 @@
                     tbody.innerHTML = data.history.map(item => `
                         <tr>
                             <td>${item.id ? item.id.slice(-8) : 'N/A'}</td>
-                            <td><a href="${item.link}" target="_blank" style="color:#667eea;">${item.link ? item.link.substring(0, 25) : 'N/A'}...</a></td>
+                            <td><a href="${item.link}" target="_blank" style="color:#667eea;">${item.link ? item.link.substring(0, 30) : 'N/A'}...</a></td>
                             <td>${item.success || 0}/${item.requested || 0}</td>
                             <td><span class="status-badge status-${item.status || 'failed'}">${item.status || 'failed'}</span></td>
-                            <td><span style="font-size:0.7rem;">${item.api_used || 'Main API'}</span></td>
                             <td><div class="progress-bar"><div class="progress-fill" style="width: ${item.progress || 0}%"></div></div></td>
                             <td>${item.startTime ? new Date(item.startTime).toLocaleString() : 'N/A'}</td>
                         </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No history found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No history found</td></tr>';
                 }
             } catch (err) { console.error(err); }
         }
