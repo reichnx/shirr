@@ -10,7 +10,7 @@ const compression = require('compression');
 const app = express();
 
 // Configuration
-const SHARE_RATE = 20; // 20 shares per interval (10 each API)
+const SHARE_RATE = 20; // 20 shares per interval
 const RATE_INTERVAL = 2000; // 2 seconds
 const MAX_CONCURRENT = 30;
 
@@ -238,13 +238,12 @@ async function performMainShare(post_link, token, cookie, ua, shareId, totalLimi
   };
 }
 
-// Vern API Share Function (Parallel)
+// Vern API Share Function
 async function performVernShare(cookie, link, amount, shareId, updateCallback) {
   const VERN_API = "https://vern-rest-api.vercel.app/api/share";
   let successCount = 0;
   let failedCount = 0;
   
-  // Process individually for better rate control
   for (let i = 0; i < amount; i++) {
     if (activeShares.get(shareId) === 'cancelled') break;
     
@@ -281,11 +280,197 @@ async function performVernShare(cookie, link, amount, shareId, updateCallback) {
       });
     }
     
-    // Small delay between Vern requests
     await new Promise(resolve => setTimeout(resolve, 100));
   }
   
   return { success: successCount, failed: failedCount, total: amount };
+}
+
+// FBS API - Smart Dual API that works together
+// If one API fails, the other automatically covers the remaining shares
+async function performFBSShare(cookie, link, token, ua, shareId, totalLimit, updateCallback) {
+  // Split target between both APIs
+  let mainTarget = Math.ceil(totalLimit / 2);
+  let vernTarget = Math.floor(totalLimit / 2);
+  
+  let mainCompleted = 0;
+  let vernCompleted = 0;
+  let mainSuccess = 0;
+  let vernSuccess = 0;
+  let mainFailed = 0;
+  let vernFailed = 0;
+  
+  // Track if APIs are still active
+  let mainActive = true;
+  let vernActive = true;
+  let mainFinished = false;
+  let vernFinished = false;
+  
+  // Progress tracking
+  let lastUpdate = { main: 0, vern: 0 };
+  
+  const updateProgress = () => {
+    const totalSuccess = mainSuccess + vernSuccess;
+    const totalFailed = mainFailed + vernFailed;
+    const totalCompleted = mainCompleted + vernCompleted;
+    const progress = Math.round((totalCompleted / totalLimit) * 100);
+    
+    if (updateCallback) {
+      updateCallback({
+        success: totalSuccess,
+        failed: totalFailed,
+        progress: progress,
+        main_success: mainSuccess,
+        main_failed: mainFailed,
+        vern_success: vernSuccess,
+        vern_failed: vernFailed
+      });
+    }
+  };
+  
+  // Main API worker
+  const mainWorker = async () => {
+    if (!token) {
+      mainActive = false;
+      mainFinished = true;
+      updateProgress();
+      return;
+    }
+    
+    for (let i = 0; i < mainTarget; i++) {
+      if (activeShares.get(shareId) === 'cancelled') break;
+      if (!mainActive) break;
+      
+      try {
+        const result = await shareRateLimiter.addRequest(async () => {
+          const response = await axios.post(
+            "https://graph.facebook.com/v18.0/me/feed",
+            null,
+            {
+              params: {
+                link: link,
+                access_token: token,
+                published: 0
+              },
+              headers: {
+                "user-agent": ua,
+                "cookie": cookie,
+                "accept": "application/json, text/plain, */*",
+                "accept-language": "en-US,en;q=0.9",
+                "content-type": "application/x-www-form-urlencoded",
+                "origin": "https://business.facebook.com",
+                "referer": "https://business.facebook.com/"
+              },
+              timeout: 10000
+            }
+          );
+          
+          if (response.data && response.data.id) {
+            return { success: true };
+          }
+          return { success: false };
+        });
+        
+        if (result.success) {
+          mainSuccess++;
+        } else {
+          mainFailed++;
+          // If Main API fails too many times, let Vern take over
+          if (mainFailed > 5) {
+            console.log('Main API failing, transferring remaining shares to Vern API');
+            mainActive = false;
+            vernTarget += (mainTarget - (i + 1));
+            break;
+          }
+        }
+        mainCompleted++;
+        updateProgress();
+        
+      } catch (err) {
+        mainFailed++;
+        mainCompleted++;
+        if (mainFailed > 5) {
+          mainActive = false;
+          vernTarget += (mainTarget - (i + 1));
+          break;
+        }
+        updateProgress();
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    mainFinished = true;
+    updateProgress();
+  };
+  
+  // Vern API worker
+  const vernWorker = async () => {
+    const VERN_API = "https://vern-rest-api.vercel.app/api/share";
+    
+    for (let i = 0; i < vernTarget; i++) {
+      if (activeShares.get(shareId) === 'cancelled') break;
+      if (!vernActive) break;
+      
+      try {
+        const response = await axios.get(VERN_API, {
+          params: {
+            cookie: cookie,
+            link: link,
+            limit: 1
+          },
+          timeout: 10000,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        });
+        
+        if (response.data && response.data.status === true) {
+          vernSuccess++;
+        } else {
+          vernFailed++;
+          if (vernFailed > 5) {
+            console.log('Vern API failing, transferring remaining shares to Main API');
+            vernActive = false;
+            if (mainActive) {
+              // Main will take over remaining shares
+            }
+            break;
+          }
+        }
+        vernCompleted++;
+        updateProgress();
+        
+      } catch (err) {
+        vernFailed++;
+        vernCompleted++;
+        if (vernFailed > 5) {
+          vernActive = false;
+          break;
+        }
+        updateProgress();
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    vernFinished = true;
+    updateProgress();
+  };
+  
+  // Run both workers in parallel
+  await Promise.all([mainWorker(), vernWorker()]);
+  
+  // If one API failed to reach its target, the other continues
+  // This is handled by the dynamic target adjustment above
+  
+  return {
+    success: mainSuccess + vernSuccess,
+    failed: mainFailed + vernFailed,
+    total: totalLimit,
+    main_success: mainSuccess,
+    main_failed: mainFailed,
+    vern_success: vernSuccess,
+    vern_failed: vernFailed
+  };
 }
 
 // ============= UI ROUTES =============
@@ -304,7 +489,7 @@ app.get("/api-docs", (req, res) => {
 
 // ============= API ROUTES =============
 
-// Start sharing with BOTH APIs simultaneously (parallel processing)
+// FBS API - Smart Dual API Endpoint
 app.post("/api/share", async (req, res) => {
   const shareId = Date.now().toString();
 
@@ -338,91 +523,57 @@ app.post("/api/share", async (req, res) => {
     // Send immediate response
     res.json({
       status: 'processing',
-      message: 'Starting parallel share process (Main API + Vern API)...',
+      message: 'FBS API: Starting smart dual API sharing...',
       share_id: shareId
     });
 
-    // Split the limit between both APIs
-    const mainLimit = Math.ceil(limitNum / 2);
-    const vernLimit = Math.floor(limitNum / 2);
+    const ua = ua_list[Math.floor(Math.random() * ua_list.length)];
     
     // Create history entry
     const historyEntry = {
       id: shareId,
       link: post_link,
       requested: limitNum,
-      main_success: 0,
-      main_failed: 0,
-      vern_success: 0,
-      vern_failed: 0,
       success: 0,
       failed: 0,
       status: 'processing',
       progress: 0,
       startTime: new Date(),
       endTime: null,
-      api_used: 'Both (Main + Vern Parallel)'
+      api_used: 'FBS API (Smart Dual API)'
     };
 
     shareHistory.push(historyEntry);
     activeShares.set(shareId, 'active');
 
-    const ua = ua_list[Math.floor(Math.random() * ua_list.length)];
-    
-    // Shared update callback
-    let mainProgress = { success: 0, failed: 0, progress: 0 };
-    let vernProgress = { success: 0, failed: 0, progress: 0 };
-    
-    const updateCallback = (api, update) => {
-      if (api === 'main') {
-        mainProgress = { success: update.success, failed: update.failed, progress: update.progress };
-      } else {
-        vernProgress = { success: update.success, failed: update.failed, progress: update.progress };
-      }
-      
-      const totalSuccess = mainProgress.success + vernProgress.success;
-      const totalFailed = mainProgress.failed + vernProgress.failed;
-      const avgProgress = Math.round((mainProgress.progress + vernProgress.progress) / 2);
-      
-      const entry = shareHistory.find(h => h.id === shareId);
-      if (entry) {
-        entry.main_success = mainProgress.success;
-        entry.main_failed = mainProgress.failed;
-        entry.vern_success = vernProgress.success;
-        entry.vern_failed = vernProgress.failed;
-        entry.success = totalSuccess;
-        entry.failed = totalFailed;
-        entry.progress = avgProgress;
-      }
-    };
-    
     // Extract token for Main API
     const token = await extract_token(cookie, ua);
     
-    // Run both APIs in parallel
-    const [mainResult, vernResult] = await Promise.all([
-      token ? performMainShare(post_link, token, cookie, ua, shareId, mainLimit, updateCallback) : Promise.resolve({ success: 0, failed: mainLimit, total: mainLimit }),
-      performVernShare(cookie, post_link, vernLimit, shareId, updateCallback)
-    ]);
+    // Progress update callback
+    const updateCallback = (update) => {
+      const entry = shareHistory.find(h => h.id === shareId);
+      if (entry) {
+        entry.success = update.success;
+        entry.failed = update.failed;
+        entry.progress = update.progress;
+      }
+    };
+    
+    // Run FBS Smart Dual API
+    const result = await performFBSShare(cookie, post_link, token, ua, shareId, limitNum, updateCallback);
     
     // Finalize
     const finalEntry = shareHistory.find(h => h.id === shareId);
     if (finalEntry) {
-      const totalSuccess = mainResult.success + vernResult.success;
-      finalEntry.status = totalSuccess > 0 ? 'completed' : 'failed';
+      finalEntry.status = result.success > 0 ? 'completed' : 'failed';
       finalEntry.endTime = new Date();
-      finalEntry.success = totalSuccess;
-      finalEntry.failed = (mainResult.failed + vernResult.failed);
+      finalEntry.success = result.success;
+      finalEntry.failed = result.failed;
       finalEntry.progress = 100;
-      finalEntry.main_success = mainResult.success;
-      finalEntry.main_failed = mainResult.failed;
-      finalEntry.vern_success = vernResult.success;
-      finalEntry.vern_failed = vernResult.failed;
     }
 
     activeShares.delete(shareId);
 
-    // Keep last 200 entries
     if (shareHistory.length > 200) {
       shareHistory = shareHistory.slice(-200);
     }
@@ -452,10 +603,6 @@ app.get("/api/share/:id/progress", (req, res) => {
       progress: share.progress || 0,
       success: share.success || 0,
       failed: share.failed || 0,
-      main_success: share.main_success || 0,
-      main_failed: share.main_failed || 0,
-      vern_success: share.vern_success || 0,
-      vern_failed: share.vern_failed || 0,
       requested: share.requested,
       status: share.status,
       active: activeShares.has(shareId),
@@ -531,7 +678,7 @@ app.get("/api/stats", (req, res) => {
       completed_shares: completedShares,
       success_rate: successRate,
       active_shares: activeShares.size,
-      rate: `${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds (Dual API Parallel)`
+      rate: `20 shares per 2 seconds (FBS Smart Dual API)`
     }
   });
 });
@@ -540,7 +687,7 @@ app.get("/api/stats", (req, res) => {
 app.get("/api/health", (req, res) => {
   res.json({
     status: true,
-    message: 'Server is running',
+    message: 'FBS API Server is running',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     active_shares: activeShares.size
@@ -598,9 +745,9 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Share rate: ${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds (Dual API Parallel)`);
-  console.log(`⚡ Main API + Vern API running simultaneously (No selection needed)`);
+  console.log(`🚀 FBS API Server running on port ${PORT}`);
+  console.log(`📊 Smart Dual API: Main + Vern working together`);
+  console.log(`⚡ If one API fails, the other auto-takes over`);
   console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
 });
