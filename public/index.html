@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberShare | Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Facebook Share Booster - Dashboard</title>
+    <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23667eea'/%3E%3Ctext x='50' y='68' font-size='50' text-anchor='middle' fill='white' font-weight='bold'%3EFS%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
@@ -15,48 +16,25 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at 20% 50%, rgba(15, 25, 45, 1) 0%, rgba(5, 10, 25, 1) 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
-            color: #e0e0e0;
-            overflow-x: hidden;
-        }
-
-        /* Animated Background Grid */
-        .cyber-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 0;
-            animation: gridFloat 20s linear infinite;
-        }
-
-        @keyframes gridFloat {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(40px, 40px); }
+            color: #fff;
         }
 
         /* Glassmorphism Navbar */
         .navbar {
-            background: rgba(10, 20, 35, 0.7);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
 
         .nav-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 1rem 2rem;
+            padding: 1rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -65,10 +43,9 @@
         }
 
         .logo {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #00ffff, #ff00ff);
+            background: linear-gradient(135deg, #fff, #667eea);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -80,147 +57,122 @@
         .logo i {
             background: none;
             -webkit-background-clip: unset;
-            color: #00ffff;
+            color: #667eea;
         }
 
         .nav-links {
             display: flex;
-            gap: 1.5rem;
+            gap: 1rem;
             align-items: center;
             flex-wrap: wrap;
         }
 
         .nav-links a {
             text-decoration: none;
-            color: #b0b0b0;
+            color: rgba(255, 255, 255, 0.7);
             font-weight: 500;
             transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            border-radius: 10px;
+            border-radius: 12px;
+            font-size: 0.9rem;
         }
 
         .nav-links a:hover, .nav-links a.active {
-            color: #00ffff;
-            background: rgba(0, 255, 255, 0.1);
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15);
         }
 
         /* Main Container */
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Glassmorphism Cards */
-        .glass-card {
-            background: rgba(15, 25, 45, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
             padding: 1.5rem;
-            transition: all 0.3s;
         }
 
-        .glass-card:hover {
-            border-color: rgba(0, 255, 255, 0.5);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
-            transform: translateY(-2px);
-        }
-
-        /* Stats Grid */
+        /* Glassmorphism Stats Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .stat-card {
-            background: rgba(15, 25, 45, 0.6);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.2rem;
             transition: all 0.3s;
         }
 
         .stat-card:hover {
-            border-color: rgba(0, 255, 255, 0.5);
-            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
         }
 
         .stat-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.8rem;
         }
 
         .stat-header i {
-            font-size: 2.5rem;
-            color: #00ffff;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            font-size: 2rem;
+            color: #667eea;
         }
 
         .stat-value {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #00ffff, #ff00ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 0.5rem;
+            color: #fff;
+            margin-bottom: 0.3rem;
         }
 
         .stat-label {
-            color: #888;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
         }
 
-        /* Quick Actions */
+        /* Glassmorphism Quick Actions */
         .quick-actions {
-            background: rgba(15, 25, 45, 0.6);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
         }
 
         .section-title {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: #00ffff;
+            margin-bottom: 1rem;
+            color: #fff;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            border-left: 3px solid #00ffff;
-            padding-left: 1rem;
         }
 
         .action-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 0.8rem;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             border: none;
             border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
@@ -228,33 +180,32 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #00ffff, #0088ff);
-            color: #0a0a0a;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: #00ffff;
-            border: 1px solid rgba(0, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .btn-secondary:hover {
-            background: rgba(0, 255, 255, 0.1);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.25);
         }
 
-        /* History Table */
+        /* Glassmorphism History Table */
         .history-section {
-            background: rgba(15, 25, 45, 0.6);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.2rem;
         }
 
         .table-wrapper {
@@ -267,59 +218,56 @@
         }
 
         th, td {
-            padding: 1rem;
+            padding: 0.8rem;
             text-align: left;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         th {
-            color: #00ffff;
+            color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
+            font-size: 0.75rem;
         }
 
         td {
-            color: #ccc;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
         }
 
         .status-badge {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
+            padding: 0.2rem 0.6rem;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
         }
 
         .status-completed {
             background: rgba(0, 255, 0, 0.2);
-            color: #00ff00;
-            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff88;
         }
 
         .status-processing {
             background: rgba(255, 165, 0, 0.2);
             color: #ffa500;
-            border: 1px solid rgba(255, 165, 0, 0.3);
         }
 
         .status-failed {
             background: rgba(255, 0, 0, 0.2);
-            color: #ff4444;
-            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff6666;
         }
 
         .progress-bar {
-            width: 100px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
+            width: 80px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            background: linear-gradient(90deg, #667eea, #764ba2);
             transition: width 0.3s;
         }
 
@@ -329,13 +277,13 @@
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 2px solid rgba(0, 255, 255, 0.2);
-            border-top-color: #00ffff;
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+            margin: 0 auto 0.5rem;
         }
 
         @keyframes spin {
@@ -343,34 +291,24 @@
         }
 
         @media (max-width: 768px) {
+            .nav-container { flex-direction: column; text-align: center; }
+            .stat-value { font-size: 1.5rem; }
+            th, td { padding: 0.5rem; font-size: 0.7rem; }
             .container { padding: 1rem; }
-            .stat-value { font-size: 1.8rem; }
-            th, td { padding: 0.5rem; font-size: 0.8rem; }
         }
     </style>
 </head>
 <body>
-    <div class="cyber-bg"></div>
-    
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <i class="fas fa-shield-alt"></i>
-                <span>CYBERSHARE</span>
+                <i class="fab fa-facebook"></i>
+                <span>Facebook Share Booster</span>
             </div>
             <div class="nav-links">
-                <a href="/" class="active">
-                    <i class="fas fa-tachometer-alt"></i>
-                    Dashboard
-                </a>
-                <a href="/share">
-                    <i class="fas fa-share-alt"></i>
-                    Share
-                </a>
-                <a href="/api-docs">
-                    <i class="fas fa-code"></i>
-                    API Docs
-                </a>
+                <a href="/" class="active"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="/share"><i class="fas fa-share-alt"></i> Share</a>
+                <a href="/api-docs"><i class="fas fa-code"></i> API Docs</a>
             </div>
         </div>
     </nav>
@@ -378,65 +316,41 @@
     <div class="container">
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-header">
-                    <i class="fas fa-chart-line"></i>
-                </div>
+                <div class="stat-header"><i class="fas fa-chart-line"></i></div>
                 <div class="stat-value" id="totalShares">0</div>
                 <div class="stat-label">TOTAL SHARES</div>
             </div>
             <div class="stat-card">
-                <div class="stat-header">
-                    <i class="fas fa-check-circle"></i>
-                </div>
+                <div class="stat-header"><i class="fas fa-check-circle"></i></div>
                 <div class="stat-value" id="totalSuccess">0</div>
                 <div class="stat-label">SUCCESSFUL</div>
             </div>
             <div class="stat-card">
-                <div class="stat-header">
-                    <i class="fas fa-times-circle"></i>
-                </div>
+                <div class="stat-header"><i class="fas fa-times-circle"></i></div>
                 <div class="stat-value" id="totalFailed">0</div>
                 <div class="stat-label">FAILED</div>
             </div>
             <div class="stat-card">
-                <div class="stat-header">
-                    <i class="fas fa-percent"></i>
-                </div>
+                <div class="stat-header"><i class="fas fa-percent"></i></div>
                 <div class="stat-value" id="successRate">0%</div>
                 <div class="stat-label">SUCCESS RATE</div>
             </div>
         </div>
 
         <div class="quick-actions">
-            <div class="section-title">
-                <i class="fas fa-bolt"></i>
-                QUICK ACTIONS
-            </div>
+            <div class="section-title"><i class="fas fa-bolt"></i> Quick Actions</div>
             <div class="action-buttons">
-                <a href="/share" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    New Campaign
-                </a>
-                <button class="btn btn-secondary" onclick="refreshData()">
-                    <i class="fas fa-sync-alt"></i>
-                    Refresh
-                </button>
+                <a href="/share" class="btn btn-primary"><i class="fas fa-plus"></i> New Campaign</a>
+                <button class="btn btn-secondary" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
         </div>
 
         <div class="history-section">
-            <div class="section-title">
-                <i class="fas fa-history"></i>
-                RECENT HISTORY
-            </div>
+            <div class="section-title"><i class="fas fa-history"></i> Recent History</div>
             <div class="table-wrapper">
                 <table>
-                    <thead>
-                        <tr><th>ID</th><th>LINK</th><th>RESULTS</th><th>STATUS</th><th>PROGRESS</th><th>DATE</th></tr>
-                    </thead>
-                    <tbody id="historyBody">
-                        <tr><td colspan="6" class="loading"><div class="spinner"></div>Loading...</td></tr>
-                    </tbody>
+                    <thead><tr><th>ID</th><th>LINK</th><th>RESULTS</th><th>STATUS</th><th>PROGRESS</th><th>DATE</th></tr></thead>
+                    <tbody id="historyBody"><tr><td colspan="6" class="loading"><div class="spinner"></div>Loading...</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -444,7 +358,6 @@
 
     <script>
         const API_BASE = window.location.origin;
-
         async function loadStats() {
             try {
                 const res = await fetch(`${API_BASE}/api/stats`);
@@ -457,7 +370,6 @@
                 }
             } catch (err) { console.error(err); }
         }
-
         async function loadHistory() {
             try {
                 const res = await fetch(`${API_BASE}/api/history?limit=20`);
@@ -467,7 +379,7 @@
                     tbody.innerHTML = data.history.map(item => `
                         <tr>
                             <td>${item.id.slice(-8)}</td>
-                            <td><a href="${item.link}" target="_blank" style="color:#00ffff;">${item.link.substring(0, 30)}...</a></td>
+                            <td><a href="${item.link}" target="_blank" style="color:#667eea;">${item.link.substring(0, 25)}...</a></td>
                             <td>${item.success}/${item.requested}</td>
                             <td><span class="status-badge status-${item.status}">${item.status}</span></td>
                             <td><div class="progress-bar"><div class="progress-fill" style="width: ${item.progress || 0}%"></div></div></td>
@@ -479,11 +391,7 @@
                 }
             } catch (err) { console.error(err); }
         }
-
-        async function refreshData() {
-            await Promise.all([loadStats(), loadHistory()]);
-        }
-
+        async function refreshData() { await Promise.all([loadStats(), loadHistory()]); }
         setInterval(refreshData, 10000);
         refreshData();
     </script>
