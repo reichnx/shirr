@@ -9,7 +9,7 @@ const compression = require('compression');
 
 const app = express();
 
-// ✅ FIX: Enable trust proxy for rate limiting behind proxies
+// ✅ Enable trust proxy for rate limiting behind proxies
 app.set('trust proxy', 1);
 
 // Configuration
@@ -17,7 +17,8 @@ const SHARE_RATE = 10;
 const RATE_INTERVAL = 2000;
 const MAX_LIMIT = 1000;
 
-// Fallback API
+// API Configuration
+const PRIMARY_API = "https://shir-api.onrender.com/api/shirr";
 const FALLBACK_API = "https://vern-rest-api.vercel.app/api/share";
 
 // Security middleware
@@ -30,7 +31,7 @@ app.use(cors({
   credentials: true
 }));
 
-// ✅ FIX: Updated rate limiter configuration
+// Rate limiter for API endpoints
 const limiter = rateLimit({
   windowMs: 60 * 1000,
   max: 5000,
@@ -47,7 +48,7 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// User Agents pool
+// User Agents pool (for potential future use)
 const ua_list = [
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
@@ -79,136 +80,36 @@ setInterval(async () => {
   }
 }, 60000);
 
-// Rate limiter for shares
-class ShareRateLimiter {
-  constructor() {
-    this.queue = [];
-    this.processing = false;
-    this.requestCount = 0;
-    this.lastReset = Date.now();
-  }
-
-  async addRequest(shareFn) {
-    return new Promise((resolve, reject) => {
-      this.queue.push({ shareFn, resolve, reject });
-      this.processQueue();
-    });
-  }
-
-  async processQueue() {
-    if (this.processing) return;
-    this.processing = true;
-
-    while (this.queue.length > 0) {
-      const now = Date.now();
-      
-      if (now - this.lastReset >= RATE_INTERVAL) {
-        this.requestCount = 0;
-        this.lastReset = now;
-      }
-
-      if (this.requestCount < SHARE_RATE) {
-        const { shareFn, resolve, reject } = this.queue.shift();
-        this.requestCount++;
-        
-        try {
-          const result = await shareFn();
-          resolve(result);
-        } catch (error) {
-          reject(error);
-        }
-        
-        if (this.requestCount < SHARE_RATE) {
-          await new Promise(resolve => setTimeout(resolve, 50));
-        }
-      } else {
-        const waitTime = RATE_INTERVAL - (now - this.lastReset);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-      }
-    }
-    
-    this.processing = false;
-  }
-}
-
-const shareRateLimiter = new ShareRateLimiter();
-
-// Token extraction
-async function extract_token(cookie, ua) {
-  for (let i = 0; i < 2; i++) {
-    try {
-      const response = await axios.get(
-        "https://business.facebook.com/business_locations",
-        {
-          headers: {
-            "user-agent": ua,
-            "cookie": cookie,
-            "referer": "https://www.facebook.com/",
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "accept-language": "en-US,en;q=0.9",
-            "accept-encoding": "gzip, deflate, br",
-            "connection": "keep-alive"
-          },
-          timeout: 10000,
-          maxRedirects: 5
-        }
-      );
-
-      const patterns = [
-        /(EAAG\w+)/,
-        /(EAA[A-Za-z0-9]+)/,
-        /access_token=([^&\s"]+)/
-      ];
-
-      for (const pattern of patterns) {
-        const match = response.data.match(pattern);
-        if (match) return match[1];
-      }
-      return null;
-    } catch (err) {
-      if (i === 1) return null;
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
-}
-
-// Main share function with fallback API
-async function performShare(post_link, token, cookie, ua, shareId, totalLimit, updateCallback) {
+// Main share function with new primary API and fallback
+async function performShare(post_link, cookie, shareId, totalLimit, updateCallback) {
   const results = [];
   
-  const mainShareFn = async () => {
+  // Primary API call function (SHIR API)
+  const primaryShareFn = async () => {
     try {
-      const response = await axios.post(
-        "https://graph.facebook.com/v18.0/me/feed",
-        null,
-        {
-          params: {
-            link: post_link,
-            access_token: token,
-            published: 0
-          },
-          headers: {
-            "user-agent": ua,
-            "cookie": cookie,
-            "accept": "application/json, text/plain, */*",
-            "accept-language": "en-US,en;q=0.9",
-            "content-type": "application/x-www-form-urlencoded",
-            "origin": "https://business.facebook.com",
-            "referer": "https://business.facebook.com/"
-          },
-          timeout: 8000
+      // URL encode the cookie for GET request
+      const encodedCookie = encodeURIComponent(cookie);
+      const url = `${PRIMARY_API}?cookie=${encodedCookie}&link=${encodeURIComponent(post_link)}&limit=1`;
+      
+      const response = await axios.get(url, {
+        timeout: 15000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'application/json'
         }
-      );
-
-      if (response.data && response.data.id) {
-        return { success: true, id: response.data.id };
+      });
+      
+      if (response.data && response.data.status === true) {
+        return { success: true, id: Date.now().toString() };
       }
-      return { success: false, error: 'No ID returned' };
+      return { success: false, error: response.data.message || 'Primary API failed' };
     } catch (err) {
+      console.error('Primary API error:', err.message);
       return { success: false, error: err.message };
     }
   };
 
+  // Fallback API call function (Vern API)
   const fallbackShareFn = async () => {
     try {
       const response = await axios.get(FALLBACK_API, {
@@ -217,19 +118,20 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit, u
           link: post_link,
           limit: 1
         },
-        timeout: 10000
+        timeout: 15000
       });
       
       if (response.data && response.data.status === true) {
         return { success: true, id: Date.now().toString() };
       }
-      return { success: false, error: response.data.message || 'Fallback failed' };
+      return { success: false, error: response.data.message || 'Fallback API failed' };
     } catch (err) {
+      console.error('Fallback API error:', err.message);
       return { success: false, error: err.message };
     }
   };
 
-  let mainFailedCount = 0;
+  let primaryFailCount = 0;
   let useFallback = false;
 
   for (let i = 0; i < totalLimit; i++) {
@@ -241,17 +143,17 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit, u
       let result;
       
       if (!useFallback) {
-        result = await shareRateLimiter.addRequest(mainShareFn);
+        result = await primaryShareFn();
         if (!result.success) {
-          mainFailedCount++;
-          if (mainFailedCount >= 3) {
+          primaryFailCount++;
+          if (primaryFailCount >= 2) {  // Switch to fallback after 2 failures
             useFallback = true;
-            console.log('Switching to fallback API due to failures');
-            result = await shareRateLimiter.addRequest(fallbackShareFn);
+            console.log('⚠️ Switching to fallback API due to primary API failures');
+            result = await fallbackShareFn();
           }
         }
       } else {
-        result = await shareRateLimiter.addRequest(fallbackShareFn);
+        result = await fallbackShareFn();
       }
       
       results.push(result);
@@ -268,6 +170,10 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit, u
           usingFallback: useFallback
         });
       }
+      
+      // Small delay between requests to be respectful
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
     } catch (err) {
       results.push({ success: false, error: err.message });
       if (updateCallback) {
@@ -285,7 +191,6 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit, u
     success: results.filter(r => r.success).length,
     failed: results.filter(r => !r.success).length,
     total: results.length,
-    results: results,
     usedFallback: useFallback
   };
 }
@@ -336,16 +241,14 @@ app.post("/api/share", async (req, res) => {
       });
     }
 
-    const ua = ua_list[Math.floor(Math.random() * ua_list.length)];
-
+    // Send immediate response
     res.json({
       status: 'processing',
       message: 'Starting share process...',
       share_id: shareId
     });
 
-    const token = await extract_token(cookie, ua);
-
+    // Create history entry
     const historyEntry = {
       id: shareId,
       link: post_link,
@@ -371,7 +274,7 @@ app.post("/api/share", async (req, res) => {
     };
 
     const shareResults = await performShare(
-      post_link, token, cookie, ua, shareId, limitNum, updateCallback
+      post_link, cookie, shareId, limitNum, updateCallback
     );
 
     const finalEntry = shareHistory.find(h => h.id === shareId);
@@ -385,6 +288,7 @@ app.post("/api/share", async (req, res) => {
 
     activeShares.delete(shareId);
 
+    // Keep last 200 entries
     if (shareHistory.length > 200) {
       shareHistory = shareHistory.slice(-200);
     }
@@ -488,7 +392,9 @@ app.get("/api/stats", (req, res) => {
       completed_shares: completedShares,
       success_rate: successRate,
       active_shares: activeShares.size,
-      max_limit: MAX_LIMIT
+      max_limit: MAX_LIMIT,
+      primary_api: PRIMARY_API,
+      fallback_api: FALLBACK_API
     }
   });
 });
@@ -565,6 +471,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📈 Max limit: ${MAX_LIMIT} shares per campaign`);
+  console.log(`🎯 Primary API: ${PRIMARY_API}`);
   console.log(`🔄 Fallback API: ${FALLBACK_API}`);
   console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
