@@ -22,7 +22,7 @@
         }
         @keyframes glow {
             0%, 100% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
-            50% { box-shadow: 0 0 15px rgba(102, 126, 234, 0.6); }
+            50% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.6); }
         }
         @keyframes rainbow {
             0% { border-color: #ff0000; }
@@ -32,6 +32,9 @@
             67% { border-color: #0088ff; }
             83% { border-color: #4400ff; }
             100% { border-color: #ff00ff; }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         .navbar {
             background: rgba(255, 255, 255, 0.08);
@@ -156,7 +159,6 @@
             font-size: 0.7rem;
             letter-spacing: 0.5px;
         }
-        /* TikTok Video Player */
         .video-container {
             position: relative;
             border-radius: 16px;
@@ -176,19 +178,6 @@
             animation: rainbow 3s linear infinite;
             padding: 2px;
         }
-        .video-info {
-            margin-top: 0.8rem;
-        }
-        .video-author {
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 0.3rem;
-        }
-        .video-title {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 0.5rem;
-        }
         .btn-next {
             width: 100%;
             padding: 0.7rem;
@@ -203,7 +192,7 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            margin-top: 0.8rem;
+            margin-top: 0.5rem;
         }
         .btn-next:hover {
             transform: translateY(-2px);
@@ -287,6 +276,7 @@
         .status-completed { background: rgba(0, 255, 0, 0.2); color: #00ff88; }
         .status-processing { background: rgba(255, 165, 0, 0.2); color: #ffa500; }
         .status-failed { background: rgba(255, 0, 0, 0.2); color: #ff6666; }
+        .status-cancelled { background: rgba(255, 165, 0, 0.2); color: #ffa500; }
         .progress-bar {
             width: 80px;
             height: 4px;
@@ -309,8 +299,6 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 0.5rem;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        /* Privacy Popup */
         .privacy-popup {
             position: fixed;
             bottom: 20px;
@@ -360,6 +348,7 @@
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .stat-value { font-size: 1.3rem; }
             th, td { padding: 0.5rem; font-size: 0.7rem; }
+            .privacy-popup { bottom: 10px; right: 10px; left: 10px; max-width: none; }
         }
     </style>
 </head>
@@ -384,7 +373,6 @@
         </div>
 
         <div class="dashboard-grid">
-            <!-- Left Column: TikTok Video Feed -->
             <div class="glass-card">
                 <div class="section-title"><i class="fab fa-tiktok"></i> TikTok Feed</div>
                 <div id="videoContainer">
@@ -392,7 +380,6 @@
                 </div>
             </div>
 
-            <!-- Right Column: Quick Actions -->
             <div class="glass-card">
                 <div class="section-title"><i class="fas fa-bolt"></i> Quick Actions</div>
                 <div class="action-buttons">
@@ -402,7 +389,6 @@
             </div>
         </div>
 
-        <!-- History Section -->
         <div class="history-section">
             <div class="section-title"><i class="fas fa-history"></i> Recent History</div>
             <div class="table-wrapper">
@@ -414,7 +400,6 @@
         </div>
     </div>
 
-    <!-- Privacy Policy Popup -->
     <div id="privacyPopup" class="privacy-popup">
         <p><i class="fas fa-shield-alt" style="color:#667eea; margin-right:0.5rem;"></i> We value your privacy. This website uses cookies and collects data for sharing functionality. By continuing, you agree to our Privacy Policy.</p>
         <div class="privacy-buttons">
@@ -425,9 +410,7 @@
 
     <script>
         const API_BASE = window.location.origin;
-        let currentVideoUrl = '';
 
-        // Privacy Popup
         function acceptPrivacy() {
             localStorage.setItem('privacyAccepted', 'true');
             document.getElementById('privacyPopup').style.display = 'none';
@@ -441,43 +424,33 @@
             document.getElementById('privacyPopup').style.display = 'none';
         }
 
-        // Load TikTok Video
         async function loadTikTokVideo() {
             const container = document.getElementById('videoContainer');
             container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading video...</div>';
-            
             try {
                 const response = await fetch(`${API_BASE}/api/tiktok-video`);
                 const data = await response.json();
-                
                 if (data.status && data.video && data.video.url) {
-                    currentVideoUrl = data.video.url;
                     container.innerHTML = `
                         <div class="rainbow-border">
                             <div class="video-container">
-                                <video controls autoplay loop>
+                                <video controls autoplay loop playsinline>
                                     <source src="${data.video.url}" type="video/mp4">
-                                    Your browser does not support the video tag.
                                 </video>
                             </div>
                         </div>
-                        <div class="video-info">
-                            <div class="video-author"><i class="fab fa-tiktok"></i> @${data.video.author || data.video.nickname || 'unknown'}</div>
-                            <div class="video-title">${data.video.title || 'TikTok Video'}</div>
-                            <div class="video-title" style="font-size:0.7rem;">Region: ${data.video.region || 'PH'} | Duration: ${data.video.duration || 0}s</div>
-                        </div>
                         <button class="btn-next" onclick="loadTikTokVideo()"><i class="fas fa-forward"></i> Next Video</button>
                     `;
+                    const video = container.querySelector('video');
+                    if (video) video.play().catch(e => console.log('Auto-play prevented:', e));
                 } else {
                     container.innerHTML = '<div class="loading">Failed to load video. <button class="btn-next" onclick="loadTikTokVideo()" style="margin-top:1rem;">Try Again</button></div>';
                 }
             } catch (error) {
-                console.error('Video load error:', error);
                 container.innerHTML = '<div class="loading">Error loading video. <button class="btn-next" onclick="loadTikTokVideo()" style="margin-top:1rem;">Retry</button></div>';
             }
         }
 
-        // Load Stats
         async function loadStats() {
             try {
                 const res = await fetch(`${API_BASE}/api/stats`);
@@ -491,7 +464,6 @@
             } catch (err) { console.error(err); }
         }
 
-        // Load History
         async function loadHistory() {
             try {
                 const res = await fetch(`${API_BASE}/api/history?limit=20`);
@@ -500,14 +472,14 @@
                 if (data.status && data.history.length) {
                     tbody.innerHTML = data.history.map(item => `
                         <tr>
-                            <td>${item.id.slice(-8)}</td>
-                            <td><a href="${item.link}" target="_blank" style="color:#667eea;">${item.link.substring(0, 25)}...</a></td>
-                            <td>${item.success}/${item.requested}</td>
-                            <td><span class="status-badge status-${item.status}">${item.status}</span></td>
+                            <td>${item.id ? item.id.slice(-8) : 'N/A'}</td>
+                            <td><a href="${item.link}" target="_blank" style="color:#667eea;">${item.link ? item.link.substring(0, 25) : 'N/A'}...</a></td>
+                            <td>${item.success || 0}/${item.requested || 0}</td>
+                            <td><span class="status-badge status-${item.status || 'failed'}">${item.status || 'failed'}</span></td>
                             <td><div class="progress-bar"><div class="progress-fill" style="width: ${item.progress || 0}%"></div></div></td>
-                            <td>${new Date(item.startTime).toLocaleString()}</td>
-                        `
-                    ).join('');
+                            <td>${item.startTime ? new Date(item.startTime).toLocaleString() : 'N/A'}</td>
+                        </tr>
+                    `).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No history found</td></tr>';
                 }
@@ -518,7 +490,6 @@
             await Promise.all([loadStats(), loadHistory()]);
         }
 
-        // Initial loads
         loadTikTokVideo();
         refreshData();
         setInterval(refreshData, 10000);
