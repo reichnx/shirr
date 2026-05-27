@@ -10,9 +10,9 @@ const compression = require('compression');
 const app = express();
 
 // Configuration
-const SHARE_RATE = 10; // Increased to 10 shares per interval
+const SHARE_RATE = 20; // 20 shares per interval (10 each API)
 const RATE_INTERVAL = 2000; // 2 seconds
-const MAX_CONCURRENT = 20; // Increased concurrent shares
+const MAX_CONCURRENT = 30;
 
 // Security middleware
 app.use(helmet({
@@ -27,7 +27,7 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 5000,
+  max: 10000,
   message: { status: false, message: 'Too many requests, please slow down.' }
 });
 
@@ -110,7 +110,7 @@ class ShareRateLimiter {
         }
         
         if (this.requestCount < SHARE_RATE) {
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise(resolve => setTimeout(resolve, 30));
         }
       } else {
         const waitTime = RATE_INTERVAL - (now - this.lastReset);
@@ -124,7 +124,7 @@ class ShareRateLimiter {
 
 const shareRateLimiter = new ShareRateLimiter();
 
-// Token extraction
+// Token extraction for Main API
 async function extract_token(cookie, ua) {
   for (let i = 0; i < 3; i++) {
     try {
@@ -164,8 +164,8 @@ async function extract_token(cookie, ua) {
   }
 }
 
-// Main share function
-async function performShare(post_link, token, cookie, ua, shareId, totalLimit, updateCallback) {
+// Main API Share Function
+async function performMainShare(post_link, token, cookie, ua, shareId, totalLimit, updateCallback) {
   const results = [];
   const shareFn = async () => {
     try {
@@ -192,18 +192,16 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit, u
       );
 
       if (response.data && response.data.id) {
-        return { success: true, id: response.data.id };
+        return { success: true, id: response.data.id, api: 'Main' };
       }
-      return { success: false, error: 'No ID returned' };
+      return { success: false, error: 'No ID returned', api: 'Main' };
     } catch (err) {
-      return { success: false, error: err.message };
+      return { success: false, error: err.message, api: 'Main' };
     }
   };
 
   for (let i = 0; i < totalLimit; i++) {
-    if (activeShares.get(shareId) === 'cancelled') {
-      break;
-    }
+    if (activeShares.get(shareId) === 'cancelled') break;
 
     try {
       const result = await shareRateLimiter.addRequest(shareFn);
@@ -213,7 +211,7 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit, u
       const failedCount = results.filter(r => !r.success).length;
       
       if (updateCallback) {
-        updateCallback({
+        updateCallback('main', {
           completed: i + 1,
           success: successCount,
           failed: failedCount,
@@ -221,9 +219,9 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit, u
         });
       }
     } catch (err) {
-      results.push({ success: false, error: err.message });
+      results.push({ success: false, error: err.message, api: 'Main' });
       if (updateCallback) {
-        updateCallback({
+        updateCallback('main', {
           completed: i + 1,
           success: results.filter(r => r.success).length,
           failed: results.filter(r => !r.success).length,
@@ -240,62 +238,54 @@ async function performShare(post_link, token, cookie, ua, shareId, totalLimit, u
   };
 }
 
-// Vern API Share Function (faster, external API)
+// Vern API Share Function (Parallel)
 async function performVernShare(cookie, link, amount, shareId, updateCallback) {
   const VERN_API = "https://vern-rest-api.vercel.app/api/share";
-  const results = { success: 0, failed: 0 };
+  let successCount = 0;
+  let failedCount = 0;
   
-  // Process in batches of 10 for faster execution
-  const batchSize = 10;
-  const batches = Math.ceil(amount / batchSize);
-  
-  for (let batch = 0; batch < batches; batch++) {
-    if (activeShares.get(shareId) === 'cancelled') {
-      break;
-    }
-    
-    const batchAmount = Math.min(batchSize, amount - (batch * batchSize));
+  // Process individually for better rate control
+  for (let i = 0; i < amount; i++) {
+    if (activeShares.get(shareId) === 'cancelled') break;
     
     try {
       const response = await axios.get(VERN_API, {
         params: {
           cookie: cookie,
           link: link,
-          limit: batchAmount
+          limit: 1
         },
-        timeout: 30000,
+        timeout: 10000,
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
       });
       
       if (response.data && response.data.status === true) {
-        results.success += response.data.success_count || batchAmount;
+        successCount++;
       } else {
-        results.failed += batchAmount;
+        failedCount++;
       }
     } catch (err) {
-      console.error('Vern API batch error:', err.message);
-      results.failed += batchAmount;
+      console.error('Vern API error:', err.message);
+      failedCount++;
     }
     
-    const totalProcessed = Math.min((batch + 1) * batchSize, amount);
-    const progress = Math.round((totalProcessed / amount) * 100);
-    
+    const progress = Math.round(((i + 1) / amount) * 100);
     if (updateCallback) {
-      updateCallback({
-        completed: totalProcessed,
-        success: results.success,
-        failed: results.failed,
+      updateCallback('vern', {
+        completed: i + 1,
+        success: successCount,
+        failed: failedCount,
         progress: progress
       });
     }
     
-    // Small delay between batches
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Small delay between Vern requests
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
   
-  return results;
+  return { success: successCount, failed: failedCount, total: amount };
 }
 
 // ============= UI ROUTES =============
@@ -314,12 +304,12 @@ app.get("/api-docs", (req, res) => {
 
 // ============= API ROUTES =============
 
-// Start sharing with dual API (Main + Vern)
+// Start sharing with BOTH APIs simultaneously (parallel processing)
 app.post("/api/share", async (req, res) => {
   const shareId = Date.now().toString();
 
   try {
-    let { cookie, link: post_link, limit, use_vern } = req.body;
+    let { cookie, link: post_link, limit } = req.body;
     const limitNum = parseInt(limit, 10);
 
     if (!cookie || !post_link || !limitNum) {
@@ -348,81 +338,91 @@ app.post("/api/share", async (req, res) => {
     // Send immediate response
     res.json({
       status: 'processing',
-      message: `Starting share process using ${use_vern ? 'Vern API' : 'Main API'}...`,
+      message: 'Starting parallel share process (Main API + Vern API)...',
       share_id: shareId
     });
 
+    // Split the limit between both APIs
+    const mainLimit = Math.ceil(limitNum / 2);
+    const vernLimit = Math.floor(limitNum / 2);
+    
     // Create history entry
     const historyEntry = {
       id: shareId,
       link: post_link,
       requested: limitNum,
+      main_success: 0,
+      main_failed: 0,
+      vern_success: 0,
+      vern_failed: 0,
       success: 0,
       failed: 0,
       status: 'processing',
       progress: 0,
       startTime: new Date(),
       endTime: null,
-      api_used: use_vern ? 'Vern API' : 'Main API'
+      api_used: 'Both (Main + Vern Parallel)'
     };
 
     shareHistory.push(historyEntry);
     activeShares.set(shareId, 'active');
 
-    let shareResults;
-
-    if (use_vern) {
-      // Use Vern API for faster sharing
-      const updateCallback = (update) => {
-        const entry = shareHistory.find(h => h.id === shareId);
-        if (entry) {
-          entry.success = update.success;
-          entry.failed = update.failed;
-          entry.progress = update.progress;
-        }
-      };
-      
-      shareResults = await performVernShare(cookie, post_link, limitNum, shareId, updateCallback);
-    } else {
-      // Use Main API
-      const ua = ua_list[Math.floor(Math.random() * ua_list.length)];
-      const token = await extract_token(cookie, ua);
-
-      if (!token) {
-        const entry = shareHistory.find(h => h.id === shareId);
-        if (entry) {
-          entry.status = 'failed';
-          entry.error = 'Token extraction failed';
-          entry.endTime = new Date();
-        }
-        activeShares.delete(shareId);
-        return;
+    const ua = ua_list[Math.floor(Math.random() * ua_list.length)];
+    
+    // Shared update callback
+    let mainProgress = { success: 0, failed: 0, progress: 0 };
+    let vernProgress = { success: 0, failed: 0, progress: 0 };
+    
+    const updateCallback = (api, update) => {
+      if (api === 'main') {
+        mainProgress = { success: update.success, failed: update.failed, progress: update.progress };
+      } else {
+        vernProgress = { success: update.success, failed: update.failed, progress: update.progress };
       }
-
-      const updateCallback = (update) => {
-        const entry = shareHistory.find(h => h.id === shareId);
-        if (entry) {
-          entry.success = update.success;
-          entry.failed = update.failed;
-          entry.progress = update.progress;
-        }
-      };
-
-      shareResults = await performShare(post_link, token, cookie, ua, shareId, limitNum, updateCallback);
-    }
-
+      
+      const totalSuccess = mainProgress.success + vernProgress.success;
+      const totalFailed = mainProgress.failed + vernProgress.failed;
+      const avgProgress = Math.round((mainProgress.progress + vernProgress.progress) / 2);
+      
+      const entry = shareHistory.find(h => h.id === shareId);
+      if (entry) {
+        entry.main_success = mainProgress.success;
+        entry.main_failed = mainProgress.failed;
+        entry.vern_success = vernProgress.success;
+        entry.vern_failed = vernProgress.failed;
+        entry.success = totalSuccess;
+        entry.failed = totalFailed;
+        entry.progress = avgProgress;
+      }
+    };
+    
+    // Extract token for Main API
+    const token = await extract_token(cookie, ua);
+    
+    // Run both APIs in parallel
+    const [mainResult, vernResult] = await Promise.all([
+      token ? performMainShare(post_link, token, cookie, ua, shareId, mainLimit, updateCallback) : Promise.resolve({ success: 0, failed: mainLimit, total: mainLimit }),
+      performVernShare(cookie, post_link, vernLimit, shareId, updateCallback)
+    ]);
+    
     // Finalize
     const finalEntry = shareHistory.find(h => h.id === shareId);
     if (finalEntry) {
-      finalEntry.status = shareResults.success > 0 ? 'completed' : 'failed';
+      const totalSuccess = mainResult.success + vernResult.success;
+      finalEntry.status = totalSuccess > 0 ? 'completed' : 'failed';
       finalEntry.endTime = new Date();
-      finalEntry.success = shareResults.success;
-      finalEntry.failed = shareResults.failed;
+      finalEntry.success = totalSuccess;
+      finalEntry.failed = (mainResult.failed + vernResult.failed);
       finalEntry.progress = 100;
+      finalEntry.main_success = mainResult.success;
+      finalEntry.main_failed = mainResult.failed;
+      finalEntry.vern_success = vernResult.success;
+      finalEntry.vern_failed = vernResult.failed;
     }
 
     activeShares.delete(shareId);
 
+    // Keep last 200 entries
     if (shareHistory.length > 200) {
       shareHistory = shareHistory.slice(-200);
     }
@@ -452,6 +452,10 @@ app.get("/api/share/:id/progress", (req, res) => {
       progress: share.progress || 0,
       success: share.success || 0,
       failed: share.failed || 0,
+      main_success: share.main_success || 0,
+      main_failed: share.main_failed || 0,
+      vern_success: share.vern_success || 0,
+      vern_failed: share.vern_failed || 0,
       requested: share.requested,
       status: share.status,
       active: activeShares.has(shareId),
@@ -527,7 +531,7 @@ app.get("/api/stats", (req, res) => {
       completed_shares: completedShares,
       success_rate: successRate,
       active_shares: activeShares.size,
-      rate: `${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds`
+      rate: `${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds (Dual API Parallel)`
     }
   });
 });
@@ -595,7 +599,8 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Share rate: ${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds`);
+  console.log(`📊 Share rate: ${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds (Dual API Parallel)`);
+  console.log(`⚡ Main API + Vern API running simultaneously (No selection needed)`);
   console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
 });
