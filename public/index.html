@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Share Bot - Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>CyberShare | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
@@ -15,15 +15,39 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: radial-gradient(circle at 20% 50%, rgba(15, 25, 45, 1) 0%, rgba(5, 10, 25, 1) 100%);
             min-height: 100vh;
+            color: #e0e0e0;
+            overflow-x: hidden;
         }
 
-        /* Navbar */
+        /* Animated Background Grid */
+        .cyber-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridFloat 20s linear infinite;
+        }
+
+        @keyframes gridFloat {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, 40px); }
+        }
+
+        /* Glassmorphism Navbar */
         .navbar {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            background: rgba(10, 20, 35, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -41,9 +65,10 @@
         }
 
         .logo {
-            font-size: 1.8rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00ffff, #ff00ff);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -54,21 +79,21 @@
 
         .logo i {
             background: none;
-            color: #667eea;
             -webkit-background-clip: unset;
+            color: #00ffff;
         }
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
             align-items: center;
             flex-wrap: wrap;
         }
 
         .nav-links a {
             text-decoration: none;
-            color: #4b5563;
-            font-weight: 600;
+            color: #b0b0b0;
+            font-weight: 500;
             transition: all 0.3s;
             display: flex;
             align-items: center;
@@ -78,8 +103,9 @@
         }
 
         .nav-links a:hover, .nav-links a.active {
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
+            color: #00ffff;
+            background: rgba(0, 255, 255, 0.1);
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
 
         /* Main Container */
@@ -87,27 +113,46 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Stats Cards */
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: rgba(15, 25, 45, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: white;
+            background: rgba(15, 25, 45, 0.6);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
             padding: 1.5rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: all 0.3s;
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border-color: rgba(0, 255, 255, 0.5);
+            transform: translateY(-3px);
         }
 
         .stat-header {
@@ -119,39 +164,47 @@
 
         .stat-header i {
             font-size: 2.5rem;
-            color: #667eea;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
 
         .stat-value {
             font-size: 2.5rem;
             font-weight: 800;
-            color: #1f2937;
+            background: linear-gradient(135deg, #00ffff, #ff00ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
             margin-bottom: 0.5rem;
         }
 
         .stat-label {
-            color: #6b7280;
-            font-size: 0.9rem;
-            font-weight: 500;
+            color: #888;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
         }
 
         /* Quick Actions */
         .quick-actions {
-            background: white;
+            background: rgba(15, 25, 45, 0.6);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 2rem;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
 
         .section-title {
-            font-size: 1.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
             font-weight: 700;
             margin-bottom: 1.5rem;
-            color: #1f2937;
+            color: #00ffff;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            border-left: 3px solid #00ffff;
+            padding-left: 1rem;
         }
 
         .action-buttons {
@@ -167,7 +220,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 1rem;
+            font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
@@ -175,42 +228,36 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, #00ffff, #0088ff);
+            color: #0a0a0a;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 20px rgba(0, 255, 255, 0.3);
         }
 
         .btn-secondary {
-            background: #f3f4f6;
-            color: #4b5563;
+            background: rgba(255, 255, 255, 0.1);
+            color: #00ffff;
+            border: 1px solid rgba(0, 255, 255, 0.3);
         }
 
         .btn-secondary:hover {
-            background: #e5e7eb;
+            background: rgba(0, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        /* Recent History */
+        /* History Table */
         .history-section {
-            background: white;
+            background: rgba(15, 25, 45, 0.6);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 1.5rem;
         }
 
-        .history-table {
+        .table-wrapper {
             overflow-x: auto;
         }
 
@@ -222,53 +269,60 @@
         th, td {
             padding: 1rem;
             text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
         }
 
         th {
-            background: #f9fafb;
+            color: #00ffff;
             font-weight: 600;
-            color: #4b5563;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        td {
+            color: #ccc;
         }
 
         .status-badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 600;
         }
 
         .status-completed {
-            background: #d1fae5;
-            color: #065f46;
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid rgba(0, 255, 0, 0.3);
         }
 
         .status-processing {
-            background: #fed7aa;
-            color: #92400e;
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+            border: 1px solid rgba(255, 165, 0, 0.3);
         }
 
         .status-failed {
-            background: #fee2e2;
-            color: #991b1b;
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff4444;
+            border: 1px solid rgba(255, 0, 0, 0.3);
         }
 
         .progress-bar {
             width: 100px;
             height: 6px;
-            background: #e5e7eb;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 3px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
             transition: width 0.3s;
         }
 
-        /* Loading */
         .loading {
             text-align: center;
             padding: 2rem;
@@ -277,78 +331,44 @@
         .spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-top-color: #00ffff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .nav-container {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            .stat-value {
-                font-size: 1.8rem;
-            }
-            
-            th, td {
-                padding: 0.5rem;
-                font-size: 0.85rem;
-            }
-        }
-
-        /* Alert */
-        .alert {
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
+            .container { padding: 1rem; }
+            .stat-value { font-size: 1.8rem; }
+            th, td { padding: 0.5rem; font-size: 0.8rem; }
         }
     </style>
 </head>
 <body>
+    <div class="cyber-bg"></div>
+    
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <i class="fab fa-facebook"></i>
-                <span>ShareBot</span>
+                <i class="fas fa-shield-alt"></i>
+                <span>CYBERSHARE</span>
             </div>
             <div class="nav-links">
                 <a href="/" class="active">
-                    <i class="fas fa-home"></i>
+                    <i class="fas fa-tachometer-alt"></i>
                     Dashboard
                 </a>
                 <a href="/share">
                     <i class="fas fa-share-alt"></i>
-                    New Share
+                    Share
                 </a>
                 <a href="/api-docs">
-                    <i class="fas fa-book"></i>
+                    <i class="fas fa-code"></i>
                     API Docs
                 </a>
             </div>
@@ -356,78 +376,66 @@
     </nav>
 
     <div class="container">
-        <!-- Stats Grid -->
-        <div class="stats-grid" id="statsGrid">
+        <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
                     <i class="fas fa-chart-line"></i>
                 </div>
                 <div class="stat-value" id="totalShares">0</div>
-                <div class="stat-label">Total Shares</div>
+                <div class="stat-label">TOTAL SHARES</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-value" id="totalSuccess">0</div>
-                <div class="stat-label">Successful Shares</div>
+                <div class="stat-label">SUCCESSFUL</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">
                     <i class="fas fa-times-circle"></i>
                 </div>
                 <div class="stat-value" id="totalFailed">0</div>
-                <div class="stat-label">Failed Shares</div>
+                <div class="stat-label">FAILED</div>
             </div>
             <div class="stat-card">
                 <div class="stat-header">
                     <i class="fas fa-percent"></i>
                 </div>
                 <div class="stat-value" id="successRate">0%</div>
-                <div class="stat-label">Success Rate</div>
+                <div class="stat-label">SUCCESS RATE</div>
             </div>
         </div>
 
-        <!-- Quick Actions -->
         <div class="quick-actions">
             <div class="section-title">
                 <i class="fas fa-bolt"></i>
-                Quick Actions
+                QUICK ACTIONS
             </div>
             <div class="action-buttons">
                 <a href="/share" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
-                    New Share Campaign
+                    New Campaign
                 </a>
                 <button class="btn btn-secondary" onclick="refreshData()">
                     <i class="fas fa-sync-alt"></i>
-                    Refresh Data
+                    Refresh
                 </button>
             </div>
         </div>
 
-        <!-- Recent History -->
         <div class="history-section">
             <div class="section-title">
                 <i class="fas fa-history"></i>
-                Recent Share History
+                RECENT HISTORY
             </div>
-            <div class="history-table">
-                <table id="historyTable">
+            <div class="table-wrapper">
+                <table>
                     <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Link</th>
-                            <th>Success/Failed</th>
-                            <th>Status</th>
-                            <th>Progress</th>
-                            <th>Date</th>
-                        </tr>
+                        <tr><th>ID</th><th>LINK</th><th>RESULTS</th><th>STATUS</th><th>PROGRESS</th><th>DATE</th></tr>
                     </thead>
                     <tbody id="historyBody">
-                        <tr>
-                            <td colspan="6" style="text-align: center;">Loading...</td>
-                        </tr>
+                        <tr><td colspan="6" class="loading"><div class="spinner"></div>Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -435,69 +443,48 @@
     </div>
 
     <script>
-        // API Base URL
         const API_BASE = window.location.origin;
 
-        // Load stats
         async function loadStats() {
             try {
-                const response = await fetch(`${API_BASE}/api/stats`);
-                const data = await response.json();
-                
+                const res = await fetch(`${API_BASE}/api/stats`);
+                const data = await res.json();
                 if (data.status) {
                     document.getElementById('totalShares').textContent = data.stats.total_shares;
                     document.getElementById('totalSuccess').textContent = data.stats.total_successful_shares;
                     document.getElementById('totalFailed').textContent = data.stats.total_failed_shares;
                     document.getElementById('successRate').textContent = `${data.stats.success_rate}%`;
                 }
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
+            } catch (err) { console.error(err); }
         }
 
-        // Load history
         async function loadHistory() {
             try {
-                const response = await fetch(`${API_BASE}/api/history?limit=20`);
-                const data = await response.json();
-                
-                if (data.status && data.history.length > 0) {
-                    const tbody = document.getElementById('historyBody');
-                    tbody.innerHTML = '';
-                    
-                    data.history.forEach(item => {
-                        const row = tbody.insertRow();
-                        row.innerHTML = `
-                            <td>${item.id}</td>
-                            <td><a href="${item.link}" target="_blank" style="color: #667eea; text-decoration: none;">${item.link.substring(0, 30)}...</a></td>
+                const res = await fetch(`${API_BASE}/api/history?limit=20`);
+                const data = await res.json();
+                const tbody = document.getElementById('historyBody');
+                if (data.status && data.history.length) {
+                    tbody.innerHTML = data.history.map(item => `
+                        <tr>
+                            <td>${item.id.slice(-8)}</td>
+                            <td><a href="${item.link}" target="_blank" style="color:#00ffff;">${item.link.substring(0, 30)}...</a></td>
                             <td>${item.success}/${item.requested}</td>
                             <td><span class="status-badge status-${item.status}">${item.status}</span></td>
-                            <td>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${item.progress || 0}%"></div>
-                                </div>
-                            </td>
+                            <td><div class="progress-bar"><div class="progress-fill" style="width: ${item.progress || 0}%"></div></div></td>
                             <td>${new Date(item.startTime).toLocaleString()}</td>
-                        `;
-                    });
+                        </tr>
+                    `).join('');
                 } else {
-                    document.getElementById('historyBody').innerHTML = '<tr><td colspan="6" style="text-align: center;">No history found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No history found</td></tr>';
                 }
-            } catch (error) {
-                console.error('Error loading history:', error);
-            }
+            } catch (err) { console.error(err); }
         }
 
-        // Refresh all data
         async function refreshData() {
-            await loadStats();
-            await loadHistory();
+            await Promise.all([loadStats(), loadHistory()]);
         }
 
-        // Auto refresh every 10 seconds
         setInterval(refreshData, 10000);
-        
-        // Initial load
         refreshData();
     </script>
 </body>
