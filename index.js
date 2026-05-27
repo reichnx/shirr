@@ -10,9 +10,9 @@ const compression = require('compression');
 const app = express();
 
 // Configuration
-const SHARE_RATE = 10; // 10 shares per second
-const RATE_INTERVAL = 1000; // 1 second interval
-const MAX_SHARE_LIMIT = 10000; // 10k max limit
+const SHARE_RATE = 10; // Increased to 10 shares per interval
+const RATE_INTERVAL = 2000; // 2 seconds
+const MAX_CONCURRENT = 20; // Increased concurrent shares
 
 // Security middleware
 app.use(helmet({
@@ -28,7 +28,7 @@ app.use(cors({
 const limiter = rateLimit({
   windowMs: 60 * 1000,
   max: 5000,
-  message: { status: false, message: 'Too many requests, please wait a moment.' }
+  message: { status: false, message: 'Too many requests, please slow down.' }
 });
 
 app.use('/api/', limiter);
@@ -44,17 +44,14 @@ const ua_list = [
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15"
 ];
 
 // Store active shares
 let shareHistory = [];
 let activeShares = new Map();
-let savedCookies = []; // Store multiple cookies
 
-// Load data
+// Load history
 (async () => {
   try {
     const data = await fs.readFile('./history.json', 'utf8');
@@ -62,21 +59,14 @@ let savedCookies = []; // Store multiple cookies
   } catch (err) {
     shareHistory = [];
   }
-  try {
-    const cookieData = await fs.readFile('./cookies.json', 'utf8');
-    savedCookies = JSON.parse(cookieData);
-  } catch (err) {
-    savedCookies = [];
-  }
 })();
 
-// Save data periodically
+// Save history periodically
 setInterval(async () => {
   try {
     await fs.writeFile('./history.json', JSON.stringify(shareHistory, null, 2));
-    await fs.writeFile('./cookies.json', JSON.stringify(savedCookies, null, 2));
   } catch (err) {
-    console.error('Error saving data:', err);
+    console.error('Error saving history:', err);
   }
 }, 60000);
 
@@ -174,15 +164,8 @@ async function extract_token(cookie, ua) {
   }
 }
 
-// Share with single cookie
-async function shareWithCookie(post_link, cookie, shareId, totalLimit, updateCallback) {
-  const ua = ua_list[Math.floor(Math.random() * ua_list.length)];
-  const token = await extract_token(cookie, ua);
-  
-  if (!token) {
-    return { success: 0, failed: totalLimit, error: 'Token extraction failed' };
-  }
-
+// Main share function
+async function performShare(post_link, token, cookie, ua, shareId, totalLimit, updateCallback) {
   const results = [];
   const shareFn = async () => {
     try {
@@ -204,7 +187,7 @@ async function shareWithCookie(post_link, cookie, shareId, totalLimit, updateCal
             "origin": "https://business.facebook.com",
             "referer": "https://business.facebook.com/"
           },
-          timeout: 15000
+          timeout: 10000
         }
       );
 
@@ -257,202 +240,117 @@ async function shareWithCookie(post_link, cookie, shareId, totalLimit, updateCal
   };
 }
 
-// Share with multiple cookies (round-robin)
-async function shareWithMultipleCookies(post_link, cookies, shareId, totalLimit, updateCallback) {
-  const results = [];
-  let currentCookieIndex = 0;
-  const sharesPerCookie = Math.ceil(totalLimit / cookies.length);
+// Vern API Share Function (faster, external API)
+async function performVernShare(cookie, link, amount, shareId, updateCallback) {
+  const VERN_API = "https://vern-rest-api.vercel.app/api/share";
+  const results = { success: 0, failed: 0 };
   
-  for (let i = 0; i < cookies.length; i++) {
-    if (activeShares.get(shareId) === 'cancelled') break;
+  // Process in batches of 10 for faster execution
+  const batchSize = 10;
+  const batches = Math.ceil(amount / batchSize);
+  
+  for (let batch = 0; batch < batches; batch++) {
+    if (activeShares.get(shareId) === 'cancelled') {
+      break;
+    }
     
-    const cookie = cookies[i];
-    const remaining = totalLimit - results.length;
-    const limit = Math.min(sharesPerCookie, remaining);
+    const batchAmount = Math.min(batchSize, amount - (batch * batchSize));
     
-    if (limit <= 0) break;
-    
-    const cookieResult = await shareWithCookie(post_link, cookie, shareId, limit, (update) => {
-      const totalSuccess = results.filter(r => r.success).length + update.success;
-      const totalFailed = results.filter(r => !r.success).length + update.failed;
-      const totalCompleted = results.length + update.completed;
+    try {
+      const response = await axios.get(VERN_API, {
+        params: {
+          cookie: cookie,
+          link: link,
+          limit: batchAmount
+        },
+        timeout: 30000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
       
-      if (updateCallback) {
-        updateCallback({
-          completed: totalCompleted,
-          success: totalSuccess,
-          failed: totalFailed,
-          progress: Math.round((totalCompleted / totalLimit) * 100)
-        });
+      if (response.data && response.data.status === true) {
+        results.success += response.data.success_count || batchAmount;
+      } else {
+        results.failed += batchAmount;
       }
-    });
+    } catch (err) {
+      console.error('Vern API batch error:', err.message);
+      results.failed += batchAmount;
+    }
     
-    results.push(...cookieResult.results || []);
+    const totalProcessed = Math.min((batch + 1) * batchSize, amount);
+    const progress = Math.round((totalProcessed / amount) * 100);
+    
+    if (updateCallback) {
+      updateCallback({
+        completed: totalProcessed,
+        success: results.success,
+        failed: results.failed,
+        progress: progress
+      });
+    }
+    
+    // Small delay between batches
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
   
-  return {
-    success: results.filter(r => r.success).length,
-    failed: results.filter(r => !r.success).length,
-    total: results.length
-  };
+  return results;
 }
+
+// ============= UI ROUTES =============
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get("/share", (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'share.html'));
+});
+
+app.get("/api-docs", (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
+});
 
 // ============= API ROUTES =============
 
-// TikTok Video API
-app.get("/api/tiktok-video", async (req, res) => {
-  const API_URL = "https://betadash-shoti-yazky.vercel.app/shotizxx?apikey=shipazu";
-
-  try {
-    const response = await axios.get(API_URL, {
-      timeout: 15000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'application/json'
-      }
-    });
-
-    if (response.data && response.data.shotiurl) {
-      res.json({
-        status: true,
-        video: {
-          url: response.data.shotiurl,
-          cover: response.data.cover_image || response.data.cover,
-          author: response.data.author || response.data.username,
-          nickname: response.data.nickname || response.data.author,
-          title: response.data.title || "TikTok Video",
-          duration: response.data.duration || 0,
-          region: response.data.region || "PH"
-        }
-      });
-    } else {
-      throw new Error('Invalid response');
-    }
-  } catch (error) {
-    console.error('TikTok API Error:', error.message);
-    res.status(500).json({
-      status: false,
-      message: 'Failed to fetch video. Please try again.'
-    });
-  }
-});
-
-// Save multiple cookies
-app.post("/api/cookies/save", (req, res) => {
-  const { cookies } = req.body;
-  
-  if (!cookies || !Array.isArray(cookies) || cookies.length === 0) {
-    return res.status(400).json({
-      status: false,
-      message: 'Please provide an array of cookies'
-    });
-  }
-  
-  savedCookies = cookies;
-  res.json({
-    status: true,
-    message: `${cookies.length} cookies saved successfully`,
-    cookies: savedCookies.map((c, i) => ({ index: i + 1, preview: c.substring(0, 30) + '...' }))
-  });
-});
-
-// Get saved cookies
-app.get("/api/cookies", (req, res) => {
-  res.json({
-    status: true,
-    cookies: savedCookies.map((c, i) => ({ index: i + 1, preview: c.substring(0, 30) + '...' })),
-    total: savedCookies.length
-  });
-});
-
-// Add single cookie
-app.post("/api/cookies/add", (req, res) => {
-  const { cookie } = req.body;
-  
-  if (!cookie) {
-    return res.status(400).json({
-      status: false,
-      message: 'Please provide a cookie'
-    });
-  }
-  
-  savedCookies.push(cookie);
-  res.json({
-    status: true,
-    message: 'Cookie added successfully',
-    total: savedCookies.length
-  });
-});
-
-// Remove cookie
-app.delete("/api/cookies/remove/:index", (req, res) => {
-  const index = parseInt(req.params.index);
-  
-  if (index >= 0 && index < savedCookies.length) {
-    savedCookies.splice(index, 1);
-    res.json({
-      status: true,
-      message: 'Cookie removed successfully',
-      total: savedCookies.length
-    });
-  } else {
-    res.status(404).json({
-      status: false,
-      message: 'Cookie not found'
-    });
-  }
-});
-
-// Start sharing (supports single or multiple cookies)
+// Start sharing with dual API (Main + Vern)
 app.post("/api/share", async (req, res) => {
   const shareId = Date.now().toString();
 
   try {
-    let { cookies, link: post_link, limit, useMultipleCookies } = req.body;
+    let { cookie, link: post_link, limit, use_vern } = req.body;
     const limitNum = parseInt(limit, 10);
 
-    if ((!cookies || cookies.length === 0) && savedCookies.length === 0) {
+    if (!cookie || !post_link || !limitNum) {
       return res.status(400).json({
         status: false,
-        message: "Please provide at least one cookie"
+        message: "Missing required fields: cookie, link, and limit are required."
       });
     }
 
-    if (!post_link || !limitNum) {
+    if (limitNum < 1 || limitNum > 1000) {
       return res.status(400).json({
         status: false,
-        message: "Missing required fields: link and limit are required."
+        message: "Limit must be between 1 and 1000 shares."
       });
     }
 
-    if (limitNum < 1 || limitNum > MAX_SHARE_LIMIT) {
+    try {
+      new URL(post_link);
+    } catch {
       return res.status(400).json({
         status: false,
-        message: `Limit must be between 1 and ${MAX_SHARE_LIMIT} shares.`
+        message: "Invalid URL format."
       });
     }
 
-    // Use cookies from request or saved cookies
-    let activeCookies = cookies && cookies.length > 0 ? cookies : savedCookies;
-    
-    if (useMultipleCookies && activeCookies.length > 1) {
-      // Use multiple cookies for round-robin sharing
-      res.json({
-        status: 'processing',
-        message: `Starting share process with ${activeCookies.length} cookies...`,
-        share_id: shareId,
-        mode: 'multi-cookie'
-      });
-    } else {
-      // Use single cookie (first one)
-      activeCookies = [activeCookies[0]];
-      res.json({
-        status: 'processing',
-        message: 'Starting share process with single cookie...',
-        share_id: shareId,
-        mode: 'single-cookie'
-      });
-    }
+    // Send immediate response
+    res.json({
+      status: 'processing',
+      message: `Starting share process using ${use_vern ? 'Vern API' : 'Main API'}...`,
+      share_id: shareId
+    });
 
     // Create history entry
     const historyEntry = {
@@ -465,28 +363,52 @@ app.post("/api/share", async (req, res) => {
       progress: 0,
       startTime: new Date(),
       endTime: null,
-      cookiesUsed: activeCookies.length,
-      mode: activeCookies.length > 1 ? 'multi-cookie' : 'single-cookie'
+      api_used: use_vern ? 'Vern API' : 'Main API'
     };
 
     shareHistory.push(historyEntry);
     activeShares.set(shareId, 'active');
 
-    // Perform sharing
-    const updateCallback = (update) => {
-      const entry = shareHistory.find(h => h.id === shareId);
-      if (entry) {
-        entry.success = update.success;
-        entry.failed = update.failed;
-        entry.progress = update.progress;
-      }
-    };
-
     let shareResults;
-    if (activeCookies.length > 1) {
-      shareResults = await shareWithMultipleCookies(post_link, activeCookies, shareId, limitNum, updateCallback);
+
+    if (use_vern) {
+      // Use Vern API for faster sharing
+      const updateCallback = (update) => {
+        const entry = shareHistory.find(h => h.id === shareId);
+        if (entry) {
+          entry.success = update.success;
+          entry.failed = update.failed;
+          entry.progress = update.progress;
+        }
+      };
+      
+      shareResults = await performVernShare(cookie, post_link, limitNum, shareId, updateCallback);
     } else {
-      shareResults = await shareWithCookie(post_link, activeCookies[0], shareId, limitNum, updateCallback);
+      // Use Main API
+      const ua = ua_list[Math.floor(Math.random() * ua_list.length)];
+      const token = await extract_token(cookie, ua);
+
+      if (!token) {
+        const entry = shareHistory.find(h => h.id === shareId);
+        if (entry) {
+          entry.status = 'failed';
+          entry.error = 'Token extraction failed';
+          entry.endTime = new Date();
+        }
+        activeShares.delete(shareId);
+        return;
+      }
+
+      const updateCallback = (update) => {
+        const entry = shareHistory.find(h => h.id === shareId);
+        if (entry) {
+          entry.success = update.success;
+          entry.failed = update.failed;
+          entry.progress = update.progress;
+        }
+      };
+
+      shareResults = await performShare(post_link, token, cookie, ua, shareId, limitNum, updateCallback);
     }
 
     // Finalize
@@ -501,7 +423,6 @@ app.post("/api/share", async (req, res) => {
 
     activeShares.delete(shareId);
 
-    // Keep last 200 entries
     if (shareHistory.length > 200) {
       shareHistory = shareHistory.slice(-200);
     }
@@ -536,8 +457,7 @@ app.get("/api/share/:id/progress", (req, res) => {
       active: activeShares.has(shareId),
       startTime: share.startTime,
       endTime: share.endTime,
-      mode: share.mode,
-      cookiesUsed: share.cookiesUsed
+      api_used: share.api_used
     }
   });
 });
@@ -607,8 +527,7 @@ app.get("/api/stats", (req, res) => {
       completed_shares: completedShares,
       success_rate: successRate,
       active_shares: activeShares.size,
-      saved_cookies: savedCookies.length,
-      max_limit: MAX_SHARE_LIMIT
+      rate: `${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds`
     }
   });
 });
@@ -620,23 +539,46 @@ app.get("/api/health", (req, res) => {
     message: 'Server is running',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    active_shares: activeShares.size,
-    saved_cookies: savedCookies.length
+    active_shares: activeShares.size
   });
 });
 
-// ============= UI ROUTES =============
+// TikTok video endpoint
+app.get("/api/tiktok-video", async (req, res) => {
+  const API_URL = "https://betadash-shoti-yazky.vercel.app/shotizxx?apikey=shipazu";
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+  try {
+    const response = await axios.get(API_URL, {
+      timeout: 15000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json'
+      }
+    });
 
-app.get("/share", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'share.html'));
-});
-
-app.get("/api-docs", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
+    if (response.data && response.data.shotiurl) {
+      res.json({
+        status: true,
+        video: {
+          url: response.data.shotiurl,
+          cover: response.data.cover_image || response.data.cover,
+          author: response.data.author || response.data.username,
+          nickname: response.data.nickname || response.data.author,
+          title: response.data.title || "TikTok Video",
+          duration: response.data.duration || 0,
+          region: response.data.region || "PH"
+        }
+      });
+    } else {
+      throw new Error('Invalid response');
+    }
+  } catch (error) {
+    console.error('TikTok API Error:', error.message);
+    res.status(500).json({
+      status: false,
+      message: 'Failed to fetch video. Please try again.'
+    });
+  }
 });
 
 // ============= ERROR PAGES =============
@@ -653,8 +595,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Max share limit: ${MAX_SHARE_LIMIT} shares`);
+  console.log(`📊 Share rate: ${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds`);
   console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
-  console.log(`🍪 Multi-cookie support: ENABLED`);
 });
