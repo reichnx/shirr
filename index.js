@@ -10,8 +10,9 @@ const compression = require('compression');
 const app = express();
 
 // Configuration
-const SHARE_RATE = 5; // 5 shares per
-const RATE_INTERVAL = 2000; // 2 seconds
+const SHARE_RATE = 10; // 10 shares per second
+const RATE_INTERVAL = 1000; // 1 second interval
+const MAX_SHARE_LIMIT = 10000; // 10k max limit
 
 // Security middleware
 app.use(helmet({
@@ -26,8 +27,8 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 2000,
-  message: { status: false, message: 'Too many requests, please slow down.' }
+  max: 5000,
+  message: { status: false, message: 'Too many requests, please wait a moment.' }
 });
 
 app.use('/api/', limiter);
@@ -43,14 +44,17 @@ const ua_list = [
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15"
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
 ];
 
 // Store active shares
 let shareHistory = [];
 let activeShares = new Map();
+let savedCookies = []; // Store multiple cookies
 
-// Load history
+// Load data
 (async () => {
   try {
     const data = await fs.readFile('./history.json', 'utf8');
@@ -58,18 +62,25 @@ let activeShares = new Map();
   } catch (err) {
     shareHistory = [];
   }
+  try {
+    const cookieData = await fs.readFile('./cookies.json', 'utf8');
+    savedCookies = JSON.parse(cookieData);
+  } catch (err) {
+    savedCookies = [];
+  }
 })();
 
-// Save history periodically
+// Save data periodically
 setInterval(async () => {
   try {
     await fs.writeFile('./history.json', JSON.stringify(shareHistory, null, 2));
+    await fs.writeFile('./cookies.json', JSON.stringify(savedCookies, null, 2));
   } catch (err) {
-    console.error('Error saving history:', err);
+    console.error('Error saving data:', err);
   }
 }, 60000);
 
-// Rate limiter for 5 shares per 2 seconds
+// Rate limiter for shares
 class ShareRateLimiter {
   constructor() {
     this.queue = [];
@@ -92,13 +103,11 @@ class ShareRateLimiter {
     while (this.queue.length > 0) {
       const now = Date.now();
       
-      // Reset counter every 2 seconds
       if (now - this.lastReset >= RATE_INTERVAL) {
         this.requestCount = 0;
         this.lastReset = now;
       }
 
-      // Check if we can send more requests
       if (this.requestCount < SHARE_RATE) {
         const { shareFn, resolve, reject } = this.queue.shift();
         this.requestCount++;
@@ -110,12 +119,10 @@ class ShareRateLimiter {
           reject(error);
         }
         
-        // Small delay between requests in the same batch
         if (this.requestCount < SHARE_RATE) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 50));
         }
       } else {
-        // Wait for next interval
         const waitTime = RATE_INTERVAL - (now - this.lastReset);
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
@@ -141,13 +148,6 @@ async function extract_token(cookie, ua) {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
             "accept-language": "en-US,en;q=0.9",
             "accept-encoding": "gzip, deflate, br",
-            "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120"',
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"Windows"',
-            "sec-fetch-dest": "document",
-            "sec-fetch-mode": "navigate",
-            "sec-fetch-site": "none",
-            "upgrade-insecure-requests": "1",
             "connection": "keep-alive"
           },
           timeout: 15000,
@@ -174,8 +174,15 @@ async function extract_token(cookie, ua) {
   }
 }
 
-// Fast share function (5 per 2 seconds)
-async function performFastShare(post_link, token, cookie, ua, shareId, totalLimit, updateCallback) {
+// Share with single cookie
+async function shareWithCookie(post_link, cookie, shareId, totalLimit, updateCallback) {
+  const ua = ua_list[Math.floor(Math.random() * ua_list.length)];
+  const token = await extract_token(cookie, ua);
+  
+  if (!token) {
+    return { success: 0, failed: totalLimit, error: 'Token extraction failed' };
+  }
+
   const results = [];
   const shareFn = async () => {
     try {
@@ -197,7 +204,7 @@ async function performFastShare(post_link, token, cookie, ua, shareId, totalLimi
             "origin": "https://business.facebook.com",
             "referer": "https://business.facebook.com/"
           },
-          timeout: 10000
+          timeout: 15000
         }
       );
 
@@ -219,7 +226,6 @@ async function performFastShare(post_link, token, cookie, ua, shareId, totalLimi
       const result = await shareRateLimiter.addRequest(shareFn);
       results.push(result);
       
-      // Update progress
       const successCount = results.filter(r => r.success).length;
       const failedCount = results.filter(r => !r.success).length;
       
@@ -247,14 +253,53 @@ async function performFastShare(post_link, token, cookie, ua, shareId, totalLimi
   return {
     success: results.filter(r => r.success).length,
     failed: results.filter(r => !r.success).length,
-    total: results.length,
-    results: results
+    total: results.length
+  };
+}
+
+// Share with multiple cookies (round-robin)
+async function shareWithMultipleCookies(post_link, cookies, shareId, totalLimit, updateCallback) {
+  const results = [];
+  let currentCookieIndex = 0;
+  const sharesPerCookie = Math.ceil(totalLimit / cookies.length);
+  
+  for (let i = 0; i < cookies.length; i++) {
+    if (activeShares.get(shareId) === 'cancelled') break;
+    
+    const cookie = cookies[i];
+    const remaining = totalLimit - results.length;
+    const limit = Math.min(sharesPerCookie, remaining);
+    
+    if (limit <= 0) break;
+    
+    const cookieResult = await shareWithCookie(post_link, cookie, shareId, limit, (update) => {
+      const totalSuccess = results.filter(r => r.success).length + update.success;
+      const totalFailed = results.filter(r => !r.success).length + update.failed;
+      const totalCompleted = results.length + update.completed;
+      
+      if (updateCallback) {
+        updateCallback({
+          completed: totalCompleted,
+          success: totalSuccess,
+          failed: totalFailed,
+          progress: Math.round((totalCompleted / totalLimit) * 100)
+        });
+      }
+    });
+    
+    results.push(...cookieResult.results || []);
+  }
+  
+  return {
+    success: results.filter(r => r.success).length,
+    failed: results.filter(r => !r.success).length,
+    total: results.length
   };
 }
 
 // ============= API ROUTES =============
 
-// TikTok Video Feed API
+// TikTok Video API
 app.get("/api/tiktok-video", async (req, res) => {
   const API_URL = "https://betadash-shoti-yazky.vercel.app/shotizxx?apikey=shipazu";
 
@@ -292,64 +337,121 @@ app.get("/api/tiktok-video", async (req, res) => {
   }
 });
 
-// Start sharing (POST)
+// Save multiple cookies
+app.post("/api/cookies/save", (req, res) => {
+  const { cookies } = req.body;
+  
+  if (!cookies || !Array.isArray(cookies) || cookies.length === 0) {
+    return res.status(400).json({
+      status: false,
+      message: 'Please provide an array of cookies'
+    });
+  }
+  
+  savedCookies = cookies;
+  res.json({
+    status: true,
+    message: `${cookies.length} cookies saved successfully`,
+    cookies: savedCookies.map((c, i) => ({ index: i + 1, preview: c.substring(0, 30) + '...' }))
+  });
+});
+
+// Get saved cookies
+app.get("/api/cookies", (req, res) => {
+  res.json({
+    status: true,
+    cookies: savedCookies.map((c, i) => ({ index: i + 1, preview: c.substring(0, 30) + '...' })),
+    total: savedCookies.length
+  });
+});
+
+// Add single cookie
+app.post("/api/cookies/add", (req, res) => {
+  const { cookie } = req.body;
+  
+  if (!cookie) {
+    return res.status(400).json({
+      status: false,
+      message: 'Please provide a cookie'
+    });
+  }
+  
+  savedCookies.push(cookie);
+  res.json({
+    status: true,
+    message: 'Cookie added successfully',
+    total: savedCookies.length
+  });
+});
+
+// Remove cookie
+app.delete("/api/cookies/remove/:index", (req, res) => {
+  const index = parseInt(req.params.index);
+  
+  if (index >= 0 && index < savedCookies.length) {
+    savedCookies.splice(index, 1);
+    res.json({
+      status: true,
+      message: 'Cookie removed successfully',
+      total: savedCookies.length
+    });
+  } else {
+    res.status(404).json({
+      status: false,
+      message: 'Cookie not found'
+    });
+  }
+});
+
+// Start sharing (supports single or multiple cookies)
 app.post("/api/share", async (req, res) => {
   const shareId = Date.now().toString();
 
   try {
-    const { cookie, link: post_link, limit } = req.body;
+    let { cookies, link: post_link, limit, useMultipleCookies } = req.body;
     const limitNum = parseInt(limit, 10);
 
-    if (!cookie || !post_link || !limitNum) {
+    if ((!cookies || cookies.length === 0) && savedCookies.length === 0) {
       return res.status(400).json({
         status: false,
-        message: "Missing required fields: cookie, link, and limit are required."
+        message: "Please provide at least one cookie"
       });
     }
 
-    if (limitNum < 1 || limitNum > 5000) {
+    if (!post_link || !limitNum) {
       return res.status(400).json({
         status: false,
-        message: "Limit must be between 1 and 5000 shares."
+        message: "Missing required fields: link and limit are required."
       });
     }
 
-    // Validate URL
-    try {
-      new URL(post_link);
-    } catch {
+    if (limitNum < 1 || limitNum > MAX_SHARE_LIMIT) {
       return res.status(400).json({
         status: false,
-        message: "Invalid URL format."
+        message: `Limit must be between 1 and ${MAX_SHARE_LIMIT} shares.`
       });
     }
 
-    const ua = ua_list[Math.floor(Math.random() * ua_list.length)];
-
-    // Send immediate response
-    res.json({
-      status: 'processing',
-      message: 'Starting share process...',
-      share_id: shareId
-    });
-
-    // Extract token
-    const token = await extract_token(cookie, ua);
-
-    if (!token) {
-      const historyEntry = {
-        id: shareId,
-        link: post_link,
-        requested: limitNum,
-        success: 0,
-        failed: 0,
-        status: 'failed',
-        error: 'Token extraction failed',
-        startTime: new Date(),
-        endTime: new Date()
-      };
-      shareHistory.push(historyEntry);
-      return;
+    // Use cookies from request or saved cookies
+    let activeCookies = cookies && cookies.length > 0 ? cookies : savedCookies;
+    
+    if (useMultipleCookies && activeCookies.length > 1) {
+      // Use multiple cookies for round-robin sharing
+      res.json({
+        status: 'processing',
+        message: `Starting share process with ${activeCookies.length} cookies...`,
+        share_id: shareId,
+        mode: 'multi-cookie'
+      });
+    } else {
+      // Use single cookie (first one)
+      activeCookies = [activeCookies[0]];
+      res.json({
+        status: 'processing',
+        message: 'Starting share process with single cookie...',
+        share_id: shareId,
+        mode: 'single-cookie'
+      });
     }
 
     // Create history entry
@@ -363,13 +465,14 @@ app.post("/api/share", async (req, res) => {
       progress: 0,
       startTime: new Date(),
       endTime: null,
-      token: token.substring(0, 20) + '...'
+      cookiesUsed: activeCookies.length,
+      mode: activeCookies.length > 1 ? 'multi-cookie' : 'single-cookie'
     };
 
     shareHistory.push(historyEntry);
     activeShares.set(shareId, 'active');
 
-    // Perform fast sharing
+    // Perform sharing
     const updateCallback = (update) => {
       const entry = shareHistory.find(h => h.id === shareId);
       if (entry) {
@@ -379,9 +482,12 @@ app.post("/api/share", async (req, res) => {
       }
     };
 
-    const shareResults = await performFastShare(
-      post_link, token, cookie, ua, shareId, limitNum, updateCallback
-    );
+    let shareResults;
+    if (activeCookies.length > 1) {
+      shareResults = await shareWithMultipleCookies(post_link, activeCookies, shareId, limitNum, updateCallback);
+    } else {
+      shareResults = await shareWithCookie(post_link, activeCookies[0], shareId, limitNum, updateCallback);
+    }
 
     // Finalize
     const finalEntry = shareHistory.find(h => h.id === shareId);
@@ -406,7 +512,7 @@ app.post("/api/share", async (req, res) => {
   }
 });
 
-// Get share progress (GET)
+// Get share progress
 app.get("/api/share/:id/progress", (req, res) => {
   const shareId = req.params.id;
   const share = shareHistory.find(h => h.id === shareId);
@@ -429,12 +535,14 @@ app.get("/api/share/:id/progress", (req, res) => {
       status: share.status,
       active: activeShares.has(shareId),
       startTime: share.startTime,
-      endTime: share.endTime
+      endTime: share.endTime,
+      mode: share.mode,
+      cookiesUsed: share.cookiesUsed
     }
   });
 });
 
-// Cancel share (POST)
+// Cancel share
 app.post("/api/share/:id/cancel", (req, res) => {
   const shareId = req.params.id;
 
@@ -459,7 +567,7 @@ app.post("/api/share/:id/cancel", (req, res) => {
   }
 });
 
-// Share history (GET)
+// Share history
 app.get("/api/history", (req, res) => {
   const limit = parseInt(req.query.limit) || 50;
   res.json({
@@ -468,7 +576,7 @@ app.get("/api/history", (req, res) => {
   });
 });
 
-// Running shares (GET)
+// Running shares
 app.get("/api/running-shares", (req, res) => {
   const runningShares = shareHistory.filter(item => 
     item.status === 'processing' && activeShares.has(item.id)
@@ -479,7 +587,7 @@ app.get("/api/running-shares", (req, res) => {
   });
 });
 
-// Stats (GET)
+// Stats
 app.get("/api/stats", (req, res) => {
   const totalShares = shareHistory.length;
   const totalSuccess = shareHistory.reduce((acc, curr) => acc + (curr.success || 0), 0);
@@ -499,63 +607,54 @@ app.get("/api/stats", (req, res) => {
       completed_shares: completedShares,
       success_rate: successRate,
       active_shares: activeShares.size,
-      rate: `${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds`
+      saved_cookies: savedCookies.length,
+      max_limit: MAX_SHARE_LIMIT
     }
   });
 });
 
-// Health check (GET)
+// Health check
 app.get("/api/health", (req, res) => {
   res.json({
     status: true,
     message: 'Server is running',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    active_shares: activeShares.size
+    active_shares: activeShares.size,
+    saved_cookies: savedCookies.length
   });
 });
 
 // ============= UI ROUTES =============
 
-// Home page
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Share page
 app.get("/share", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'share.html'));
 });
 
-// API Documentation page
 app.get("/api-docs", (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
 });
 
 // ============= ERROR PAGES =============
 
-// 404 Error page
 app.use((req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
-// 500 Error page
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).sendFile(path.join(__dirname, 'public', '500.html'));
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  process.exit(0);
-});
-
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Share rate: ${SHARE_RATE} shares per ${RATE_INTERVAL/1000} seconds`);
+  console.log(`📊 Max share limit: ${MAX_SHARE_LIMIT} shares`);
   console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
-  console.log(`🎥 TikTok Video API: http://localhost:${PORT}/api/tiktok-video`);
+  console.log(`🍪 Multi-cookie support: ENABLED`);
 });
