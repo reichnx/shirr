@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Facebook Share Booster - API Docs</title>
+    <title>FBS API - Documentation</title>
     <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23667eea'/%3E%3Ctext x='50' y='68' font-size='50' text-anchor='middle' fill='white' font-weight='bold'%3EFS%3C/text%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -167,10 +167,6 @@
             background: rgba(255, 0, 0, 0.2);
             color: #ff8888;
         }
-        .badge-optional {
-            background: rgba(255, 165, 0, 0.2);
-            color: #ffaa44;
-        }
         .code-block {
             background: rgba(0, 0, 0, 0.5);
             padding: 0.6rem;
@@ -201,7 +197,7 @@
             font-size: 0.7rem;
             color: rgba(255, 255, 255, 0.6);
         }
-        .dual-badge {
+        .fbs-badge {
             display: inline-block;
             padding: 0.2rem 0.6rem;
             border-radius: 20px;
@@ -233,7 +229,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo"><i class="fab fa-facebook"></i><span>Facebook Share Booster</span></div>
+            <div class="logo"><i class="fab fa-facebook"></i><span>FBS API</span></div>
             <div class="nav-links">
                 <a href="/"><i class="fas fa-home"></i> Home</a>
                 <a href="/share"><i class="fas fa-share-alt"></i> Share</a>
@@ -245,33 +241,53 @@
     <div class="container">
         <div class="glass-card">
             <div class="api-header">
-                <h1><i class="fas fa-code"></i> API Reference</h1>
-                <p>Dual API Parallel Processing - No Selection Needed</p>
+                <h1><i class="fas fa-code"></i> FBS API</h1>
+                <p>Smart Dual API - 2 APIs Working Together as One</p>
                 <p style="font-size:0.7rem; margin-top:0.3rem;">Base URL: http://localhost:5000/api/</p>
             </div>
         </div>
 
-        <!-- System Overview -->
+        <!-- What is FBS API -->
         <div class="glass-card">
-            <div class="section-title"><i class="fas fa-info-circle"></i> System Overview</div>
+            <div class="section-title"><i class="fas fa-question-circle"></i> What is FBS API?</div>
+            <div class="description">
+                <strong>FBS API</strong> stands for <strong>Facebook Share Booster API</strong>. It combines TWO powerful APIs into ONE unified system:
+            </div>
             <div class="feature-list">
-                <span class="feature-item"><i class="fas fa-bolt"></i> Dual API Parallel</span>
-                <span class="feature-item"><i class="fas fa-tachometer-alt"></i> 20 shares/2 sec</span>
-                <span class="feature-item"><i class="fas fa-chart-line"></i> Max 1000 shares</span>
-                <span class="feature-item"><i class="fas fa-random"></i> Auto 50/50 Split</span>
+                <span class="feature-item"><i class="fas fa-fire"></i> Main API (Facebook Graph)</span>
+                <span class="feature-item"><i class="fas fa-bolt"></i> Vern API (External Fast API)</span>
             </div>
             <div class="description" style="margin-top:0.8rem;">
-                Both Main API (Facebook Graph) and Vern API run simultaneously. No manual selection required - the system automatically splits shares between both APIs for maximum speed and reliability.
+                Both APIs work together simultaneously. <strong>If one API cannot reach its target, the other API automatically takes over</strong> to complete the remaining shares. This ensures 100% of your target is always achieved.
             </div>
         </div>
 
-        <!-- Share Endpoints -->
+        <!-- Smart Features -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-microchip"></i> Smart Features</div>
+            <div class="feature-list">
+                <span class="feature-item"><i class="fas fa-random"></i> Auto Load Balancing</span>
+                <span class="feature-item"><i class="fas fa-sync-alt"></i> Auto Failover</span>
+                <span class="feature-item"><i class="fas fa-chart-line"></i> Dynamic Target Adjustment</span>
+                <span class="feature-item"><i class="fas fa-shield-alt"></i> Self-Healing</span>
+            </div>
+            <div class="description" style="margin-top:0.8rem;">
+                <ul style="margin-left: 1.5rem; line-height: 1.6;">
+                    <li><strong>Auto Load Balancing:</strong> Shares are automatically split 50/50 between both APIs</li>
+                    <li><strong>Auto Failover:</strong> If one API fails (5+ errors), its remaining shares transfer to the working API</li>
+                    <li><strong>Dynamic Target Adjustment:</strong> Targets are recalculated in real-time based on API performance</li>
+                    <li><strong>Self-Healing:</strong> The system automatically recovers from API failures</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Share Endpoint -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-share-alt"></i> Share Operations</div>
             
             <div class="endpoint-card">
-                <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/share</span></div>
-                <div class="description">Start a new share campaign (automatically uses both APIs)</div>
+                <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/share</span> <span class="fbs-badge">FBS API</span></div>
+                <div class="description">Start a new share campaign - Automatically uses BOTH APIs</div>
                 <div class="param-details">
                     <div class="param-item"><span class="param-name">cookie</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
                     <div class="param-item"><span class="param-name">link</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
@@ -282,14 +298,14 @@
   "link": "https://www.facebook.com/post/123",
   "limit": 100
 }</div>
-                <div class="description" style="margin-top:0.5rem; font-size:0.7rem;">
-                    <i class="fas fa-info-circle"></i> Shares are automatically split: 50% to Main API, 50% to Vern API
+                <div class="description" style="margin-top:0.5rem; font-size:0.7rem; color:#00ff88;">
+                    <i class="fas fa-info-circle"></i> FBS Smart Logic: 50 shares to Main API, 50 shares to Vern API. If one API fails, the other completes the target.
                 </div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/share/:id/progress</span></div>
-                <div class="description">Monitor campaign progress (combined results)</div>
+                <div class="description">Monitor campaign progress (combined from both APIs)</div>
                 <div class="code-block">GET /api/share/1706123456789/progress</div>
                 <div class="code-block" style="margin-top:0.5rem;">{
   "status": true,
@@ -311,6 +327,37 @@
             </div>
         </div>
 
+        <!-- How FBS API Works -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-cogs"></i> How FBS API Works</div>
+            <div class="description">
+                <ol style="margin-left: 1.5rem; line-height: 1.8;">
+                    <li><strong>Step 1:</strong> User submits cookie, link, and target amount (max 1000)</li>
+                    <li><strong>Step 2:</strong> FBS API automatically splits target: 50% to Main API, 50% to Vern API</li>
+                    <li><strong>Step 3:</strong> Both APIs start sharing simultaneously in parallel</li>
+                    <li><strong>Step 4:</strong> If an API fails (5+ errors), its remaining shares transfer to the working API</li>
+                    <li><strong>Step 5:</strong> The working API continues until the FULL target is achieved</li>
+                    <li><strong>Step 6:</strong> Results are combined into a single success/failed count</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Visual Example -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-chart-simple"></i> Example Scenario</div>
+            <div class="endpoint-card">
+                <div class="description"><strong>Target: 100 shares</strong></div>
+                <div class="description" style="margin-top:0.5rem;">
+                    📊 <strong>Initial Split:</strong> Main API = 50 shares | Vern API = 50 shares<br>
+                    ⚡ <strong>Both APIs run simultaneously</strong><br>
+                    ❌ <strong>Main API fails after 30 shares</strong> (5+ errors detected)<br>
+                    🔄 <strong>Auto Failover:</strong> Remaining 20 shares from Main → Vern API<br>
+                    ✅ <strong>Vern API continues:</strong> Completes 50 + 20 = 70 shares<br>
+                    🎯 <strong>Final Result:</strong> 100/100 shares completed! (30 from Main + 70 from Vern)
+                </div>
+            </div>
+        </div>
+
         <!-- Data Endpoints -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-database"></i> Data & Statistics</div>
@@ -318,7 +365,6 @@
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/history?limit=20</span></div>
                 <div class="description">View share history (combined results)</div>
-                <div class="code-block">GET /api/history?limit=20</div>
             </div>
 
             <div class="endpoint-card">
@@ -328,7 +374,8 @@
   "total_shares": 1250,
   "total_successful_shares": 1180,
   "success_rate": 94,
-  "active_shares": 2
+  "active_shares": 2,
+  "rate": "20 shares per 2 seconds (FBS Smart Dual API)"
 }</div>
             </div>
 
@@ -348,29 +395,6 @@
             </div>
         </div>
 
-        <!-- API Architecture -->
-        <div class="glass-card">
-            <div class="section-title"><i class="fas fa-cogs"></i> API Architecture</div>
-            
-            <div class="endpoint-card">
-                <div><span class="api-name"><i class="fas fa-fire"></i> Main API</span> <span class="dual-badge">Facebook Graph API</span></div>
-                <div class="description">Uses Facebook's official Graph API with token extraction. Requires valid Facebook cookie.</div>
-                <div class="description" style="font-size:0.7rem; margin-top:0.3rem;">📊 Handles 50% of shares (max 500 per campaign)</div>
-            </div>
-            
-            <div class="endpoint-card">
-                <div><span class="api-name"><i class="fas fa-bolt"></i> Vern API</span> <span class="dual-badge">External Fast API</span></div>
-                <div class="description">Uses external Vern API for faster processing. More stable and bypasses rate limits.</div>
-                <div class="description" style="font-size:0.7rem; margin-top:0.3rem;">📊 Handles 50% of shares (max 500 per campaign)</div>
-            </div>
-            
-            <div class="endpoint-card">
-                <div><span class="api-name"><i class="fas fa-random"></i> Parallel Processing</span></div>
-                <div class="description">Both APIs run simultaneously using Promise.all() for maximum speed</div>
-                <div class="description" style="font-size:0.7rem; margin-top:0.3rem;">⚡ Total speed: 20 shares per 2 seconds (10 from each API)</div>
-            </div>
-        </div>
-
         <!-- Error Codes -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-exclamation-triangle"></i> Error Codes</div>
@@ -384,32 +408,11 @@
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-gauge-high"></i> Rate Limits</div>
             <div class="description">
-                <p><strong>Share Rate:</strong> 20 shares per 2 seconds (10 Main API + 10 Vern API)</p>
-                <p><strong>Max per Campaign:</strong> 1000 shares total (500 Main + 500 Vern)</p>
+                <p><strong>Share Rate:</strong> 20 shares per 2 seconds (10 Main + 10 Vern)</p>
+                <p><strong>Max per Campaign:</strong> 1000 shares total</p>
                 <p><strong>API Rate Limit:</strong> 10,000 requests per minute</p>
                 <p><strong>Concurrent Campaigns:</strong> Unlimited (queued processing)</p>
-            </div>
-        </div>
-
-        <!-- How It Works -->
-        <div class="glass-card">
-            <div class="section-title"><i class="fas fa-question-circle"></i> How It Works</div>
-            <div class="description">
-                <ol style="margin-left: 1.5rem; line-height: 1.6;">
-                    <li>User submits cookie, link, and share amount (1-1000)</li>
-                    <li>System automatically splits amount: 50% to Main API, 50% to Vern API</li>
-                    <li>Both APIs run simultaneously in parallel</li>
-                    <li>Main API extracts token and uses Facebook Graph API</li>
-                    <li>Vern API uses external fast API endpoint</li>
-                    <li>Results are combined into single success/failed counts</li>
-                    <li>Progress shows combined percentage from both APIs</li>
-                </ol>
-            </div>
-            <div class="feature-list" style="margin-top:0.8rem;">
-                <span class="feature-item"><i class="fas fa-check-circle"></i> No API selection needed</span>
-                <span class="feature-item"><i class="fas fa-chart-line"></i> Automatic 50/50 split</span>
-                <span class="feature-item"><i class="fas fa-bolt"></i> Parallel execution</span>
-                <span class="feature-item"><i class="fas fa-chart-simple"></i> Combined results</span>
+                <p><strong>Auto Failover Threshold:</strong> 5 consecutive failures</p>
             </div>
         </div>
     </div>
