@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Share Bot - New Share Campaign</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            background: none;
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #4b5563;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-subtitle {
+            color: #6b7280;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        label i {
+            margin-right: 0.5rem;
+            color: #667eea;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .info-text {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .info-text i {
+            margin-right: 0.25rem;
+        }
+
+        .range-value {
+            display: inline-block;
+            margin-left: 1rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        input[type="range"] {
+            padding: 0;
+            height: 6px;
+        }
+
+        input[type="range"]:focus {
+            box-shadow: none;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .progress-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e5e7eb;
+            display: none;
+        }
+
+        .progress-section.active {
+            display: block;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-box {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-box .label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-box .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .share-id {
+            font-family: monospace;
+            background: #f3f4f6;
+            padding: 0.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .form-card {
+                padding: 1.5rem;
+            }
+            
+            .form-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fab fa-facebook"></i>
+                <span>ShareBot</span>
+            </div>
+            <div class="nav-links">
+                <a href="/">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a href="/share" class="active">
+                    <i class="fas fa-share-alt"></i>
+                    New Share
+                </a>
+                <a href="/api-docs">
+                    <i class="fas fa-book"></i>
+                    API Docs
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="form-card">
+            <div class="form-title">
+                <i class="fas fa-rocket"></i>
+                New Share Campaign
+            </div>
+            <div class="form-subtitle">
+                Share your content with speed (5 shares per 2 seconds)
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <form id="shareForm">
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-key"></i>
+                        Facebook Cookie
+                    </label>
+                    <textarea 
+                        name="cookie" 
+                        placeholder="Paste your Facebook cookie here..."
+                        required
+                    ></textarea>
+                    <div class="info-text">
+                        <i class="fas fa-info-circle"></i>
+                        How to get cookie: Open Facebook > F12 > Application > Cookies > Copy c_user and xs values
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-link"></i>
+                        Post Link to Share
+                    </label>
+                    <input 
+                        type="url" 
+                        name="link" 
+                        placeholder="https://www.facebook.com/..."
+                        required
+                    />
+                    <div class="info-text">
+                        <i class="fas fa-info-circle"></i>
+                        Facebook post URL that you want to share
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-chart-line"></i>
+                        Number of Shares
+                        <span class="range-value" id="limitValue">100</span>
+                    </label>
+                    <input 
+                        type="range" 
+                        name="limit" 
+                        min="1" 
+                        max="5000" 
+                        value="100"
+                        oninput="document.getElementById('limitValue').innerText = this.value"
+                    />
+                    <div class="info-text">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Speed: 5 shares every 2 seconds (max 5000 shares)
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <i class="fas fa-play"></i>
+                    Start Sharing
+                </button>
+            </form>
+
+            <div class="progress-section" id="progressSection">
+                <div class="progress-header">
+                    <span>Progress</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+                </div>
+                
+                <div class="stats-summary">
+                    <div class="stat-box">
+                        <div class="label">Successful</div>
+                        <div class="value" id="successCount">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="label">Failed</div>
+                        <div class="value" id="failedCount">0</div>
+                    </div>
+                </div>
+
+                <div class="share-id" id="shareIdDisplay"></div>
+
+                <button class="btn-submit" id="cancelBtn" style="background: #ef4444; margin-top: 1rem;" onclick="cancelShare()">
+                    <i class="fas fa-stop"></i>
+                    Cancel Share
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentShareId = null;
+        let progressInterval = null;
+
+        document.getElementById('shareForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                cookie: formData.get('cookie'),
+                link: formData.get('link'),
+                limit: parseInt(formData.get('limit'))
+            };
+
+            // Validate
+            if (!data.cookie || !data.link || !data.limit) {
+                showAlert('Please fill all fields', 'error');
+                return;
+            }
+
+            if (data.limit < 1 || data.limit > 5000) {
+                showAlert('Limit must be between 1 and 5000', 'error');
+                return;
+            }
+
+            // Disable form
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="spinner"></div> Processing...';
+
+            try {
+                const response = await fetch('/api/share', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'processing' && result.share_id) {
+                    currentShareId = result.share_id;
+                    showAlert('Share started successfully! Monitoring progress...', 'success');
+                    document.getElementById('progressSection').classList.add('active');
+                    document.getElementById('shareIdDisplay').innerHTML = `Share ID: ${currentShareId}`;
+                    startProgressMonitoring();
+                } else {
+                    showAlert('Failed to start share: ' + (result.message || 'Unknown error'), 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-play"></i> Start Sharing';
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-play"></i> Start Sharing';
+            }
+        });
+
+        function startProgressMonitoring() {
+            if (progressInterval) clearInterval(progressInterval);
+            
+            progressInterval = setInterval(async () => {
+                if (!currentShareId) return;
+                
+                try {
+                    const response = await fetch(`/api/share/${currentShareId}/progress`);
+                    const data = await response.json();
+                    
+                    if (data.status && data.share) {
+                        const share = data.share;
+                        const percent = share.progress || 0;
+                        
+                        document.getElementById('progressFill').style.width = `${percent}%`;
+                        document.getElementById('progressFill').innerHTML = `${percent}%`;
+                        document.getElementById('progressPercent').innerHTML = `${percent}%`;
+                        document.getElementById('successCount').innerHTML = share.success || 0;
+                        document.getElementById('failedCount').innerHTML = share.failed || 0;
+                        
+                        // Check if completed
+                        if (share.status === 'completed' || share.status === 'failed' || share.status === 'cancelled') {
+                            clearInterval(progressInterval);
+                            document.getElementById('submitBtn').disabled = false;
+                            document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start Sharing';
+                            
+                            if (share.status === 'completed') {
+                                showAlert(`Share completed! ${share.success} successful, ${share.failed} failed`, 'success');
+                            } else if (share.status === 'cancelled') {
+                                showAlert('Share was cancelled', 'info');
+                            } else {
+                                showAlert('Share failed. Please check your cookie.', 'error');
+                            }
+                            
+                            currentShareId = null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Progress check error:', error);
+                }
+            }, 2000);
+        }
+
+        async function cancelShare() {
+            if (!currentShareId) return;
+            
+            if (confirm('Are you sure you want to cancel this share campaign?')) {
+                try {
+                    const response = await fetch(`/api/share/${currentShareId}/cancel`, {
+                        method: 'POST'
+                    });
+                    const data = await response.json();
+                    
+                    if (data.status) {
+                        showAlert('Share cancelled successfully', 'success');
+                        clearInterval(progressInterval);
+                        document.getElementById('submitBtn').disabled = false;
+                        document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start Sharing';
+                        currentShareId = null;
+                    }
+                } catch (error) {
+                    showAlert('Error cancelling share: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            
+            const icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
+            alert.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+            
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
