@@ -339,16 +339,6 @@
             cursor: pointer;
             font-size: 0.75rem;
         }
-        .cookie-info {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            padding: 0.8rem;
-            margin-top: 1rem;
-        }
-        .cookie-info span {
-            color: #667eea;
-            font-weight: 600;
-        }
         @media (max-width: 1024px) {
             .dashboard-grid { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -396,8 +386,11 @@
                     <a href="/share" class="btn btn-primary"><i class="fas fa-plus"></i> New Campaign</a>
                     <button class="btn btn-secondary" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh Stats</button>
                 </div>
-                <div class="cookie-info" id="cookieInfo">
-                    <i class="fas fa-cookie-bite"></i> Loading cookie info...
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div class="section-title" style="margin-bottom: 0.5rem;"><i class="fas fa-info-circle"></i> System Info</div>
+                    <p style="font-size: 0.75rem; color: rgba(255,255,255,0.6);"><i class="fas fa-tachometer-alt"></i> Dual API Support: Main + Vern</p>
+                    <p style="font-size: 0.75rem; color: rgba(255,255,255,0.6);"><i class="fas fa-bolt"></i> Fast Sharing: 10 shares/2 seconds</p>
+                    <p style="font-size: 0.75rem; color: rgba(255,255,255,0.6);"><i class="fas fa-chart-line"></i> Max Limit: 1000 shares</p>
                 </div>
             </div>
         </div>
@@ -406,7 +399,7 @@
             <div class="section-title"><i class="fas fa-history"></i> Recent History</div>
             <div class="table-wrapper">
                 <table>
-                    <thead><tr><th>ID</th><th>LINK</th><th>RESULTS</th><th>STATUS</th><th>MODE</th><th>PROGRESS</th><th>DATE</th></tr></thead>
+                    <thead><tr><th>ID</th><th>LINK</th><th>RESULTS</th><th>STATUS</th><th>API</th><th>PROGRESS</th><th>DATE</th></tr></thead>
                     <tbody id="historyBody"><tr><td colspan="7" class="loading"><div class="spinner"></div>Loading...</td></tr></tbody>
                 </table>
             </div>
@@ -423,19 +416,10 @@
 
     <script>
         const API_BASE = window.location.origin;
-
-        function acceptPrivacy() {
-            localStorage.setItem('privacyAccepted', 'true');
-            document.getElementById('privacyPopup').style.display = 'none';
-        }
-        function declinePrivacy() {
-            localStorage.setItem('privacyAccepted', 'false');
-            document.getElementById('privacyPopup').style.display = 'none';
-            alert('You declined. Some features may be limited.');
-        }
-        if (localStorage.getItem('privacyAccepted') === 'true') {
-            document.getElementById('privacyPopup').style.display = 'none';
-        }
+        
+        function acceptPrivacy() { localStorage.setItem('privacyAccepted', 'true'); document.getElementById('privacyPopup').style.display = 'none'; }
+        function declinePrivacy() { localStorage.setItem('privacyAccepted', 'false'); document.getElementById('privacyPopup').style.display = 'none'; alert('You declined. Some features may be limited.'); }
+        if (localStorage.getItem('privacyAccepted') === 'true') { document.getElementById('privacyPopup').style.display = 'none'; }
 
         async function loadTikTokVideo() {
             const container = document.getElementById('videoContainer');
@@ -449,6 +433,7 @@
                             <div class="video-container">
                                 <video controls autoplay loop playsinline>
                                     <source src="${data.video.url}" type="video/mp4">
+                                    Your browser does not support the video tag.
                                 </video>
                             </div>
                         </div>
@@ -462,19 +447,6 @@
             } catch (error) {
                 container.innerHTML = '<div class="loading">Error loading video. <button class="btn-next" onclick="loadTikTokVideo()" style="margin-top:1rem;">Retry</button></div>';
             }
-        }
-
-        async function loadCookieInfo() {
-            try {
-                const res = await fetch(`${API_BASE}/api/cookies`);
-                const data = await res.json();
-                if (data.status) {
-                    document.getElementById('cookieInfo').innerHTML = `
-                        <i class="fas fa-cookie-bite"></i> <span>${data.total}</span> cookies saved
-                        <br><small style="font-size:0.7rem;">Add more cookies in Share page for multi-account sharing</small>
-                    `;
-                }
-            } catch (err) { console.error(err); }
         }
 
         async function loadStats() {
@@ -502,21 +474,19 @@
                             <td><a href="${item.link}" target="_blank" style="color:#667eea;">${item.link ? item.link.substring(0, 25) : 'N/A'}...</a></td>
                             <td>${item.success || 0}/${item.requested || 0}</td>
                             <td><span class="status-badge status-${item.status || 'failed'}">${item.status || 'failed'}</span></td>
-                            <td><span class="status-badge" style="background:rgba(102,126,234,0.2);color:#667eea;">${item.mode === 'multi-cookie' ? 'Multi-Cookie' : 'Single'}</span></td>
+                            <td><span style="font-size:0.7rem;">${item.api_used || 'Main API'}</span></td>
                             <td><div class="progress-bar"><div class="progress-fill" style="width: ${item.progress || 0}%"></div></div></td>
                             <td>${item.startTime ? new Date(item.startTime).toLocaleString() : 'N/A'}</td>
-                        `
-                    ).join('');
+                        </tr>
+                    `).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No history found</td></tr>';
                 }
             } catch (err) { console.error(err); }
         }
 
-        async function refreshData() {
-            await Promise.all([loadStats(), loadHistory(), loadCookieInfo()]);
-        }
-
+        async function refreshData() { await Promise.all([loadStats(), loadHistory()]); }
+        
         loadTikTokVideo();
         refreshData();
         setInterval(refreshData, 10000);
