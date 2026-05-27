@@ -1,27 +1,21 @@
 {
   "name": "facebook-share-booster",
-  "version": "3.0.0",
-  "description": "Advanced Facebook Share Automation Tool with Dual API Support (Main API + Vern API) - Fast sharing with glassmorphism UI",
+  "version": "2.0.0",
+  "description": "Advanced Facebook Share Bot with 1000 shares limit, fallback API, and modern UI",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "pm2-start": "pm2 start index.js --name facebook-share-booster",
-    "pm2-stop": "pm2 stop facebook-share-booster",
-    "pm2-restart": "pm2 restart facebook-share-booster",
-    "pm2-logs": "pm2 logs facebook-share-booster"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "facebook",
     "share-bot",
-    "facebook-automation",
+    "automation",
     "social-media",
-    "facebook-sharer",
-    "auto-share",
-    "facebook-tool",
-    "vern-api",
-    "graph-api",
-    "share-booster"
+    "facebook-automation",
+    "share-automation",
+    "facebook-sharer"
   ],
   "author": "Facebook Share Booster",
   "license": "MIT",
