@@ -15,6 +15,7 @@
             min-height: 100vh;
             color: #fff;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .navbar {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px);
@@ -229,9 +230,9 @@
     <div class="container">
         <div class="glass-card">
             <div class="form-title"><i class="fas fa-rocket"></i> New Campaign</div>
-            <div class="form-subtitle">Execute automated share campaign using GET request</div>
+            <div class="form-subtitle">Execute automated share campaign (5 shares per 2 seconds)</div>
             <div id="alertContainer"></div>
-            <form id="shareForm" onsubmit="event.preventDefault(); startShare();">
+            <form id="shareForm">
                 <div class="form-group">
                     <label><i class="fas fa-key"></i> Facebook Cookie</label>
                     <textarea id="cookie" placeholder="c_user=...; xs=..." required></textarea>
@@ -243,7 +244,7 @@
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-chart-line"></i> Share Count <span class="range-value" id="limitValue">100</span></label>
-                    <input type="range" id="amount" min="1" max="5000" value="100" oninput="document.getElementById('limitValue').innerText = this.value"/>
+                    <input type="range" id="limit" min="1" max="5000" value="100" oninput="document.getElementById('limitValue').innerText = this.value"/>
                 </div>
                 <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-play"></i> Start Campaign</button>
             </form>
@@ -261,14 +262,17 @@
     </div>
 
     <script>
-        let currentShareId = null, progressInterval = null;
+        let currentShareId = null;
+        let progressInterval = null;
 
-        async function startShare() {
+        document.getElementById('shareForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
             const cookie = document.getElementById('cookie').value;
             const link = document.getElementById('link').value;
-            const amount = document.getElementById('amount').value;
+            const limit = document.getElementById('limit').value;
 
-            if (!cookie || !link || !amount) {
+            if (!cookie || !link || !limit) {
                 showAlert('Please fill all fields', 'error');
                 return;
             }
@@ -278,13 +282,17 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Initializing...';
 
             try {
-                const url = `/api/share?cookie=${encodeURIComponent(cookie)}&link=${encodeURIComponent(link)}&amount=${amount}`;
-                const response = await fetch(url);
+                const response = await fetch('/api/share', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cookie, link, limit: parseInt(limit) })
+                });
+
                 const result = await response.json();
 
                 if (result.status === 'processing' && result.share_id) {
                     currentShareId = result.share_id;
-                    showAlert('Campaign started successfully', 'success');
+                    showAlert('Campaign started successfully! 5 shares per 2 seconds', 'success');
                     document.getElementById('progressSection').classList.add('active');
                     document.getElementById('shareIdDisplay').innerHTML = `Campaign ID: ${currentShareId}`;
                     startProgressMonitoring();
@@ -298,32 +306,45 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-play"></i> Start Campaign';
             }
-        }
+        });
 
         function startProgressMonitoring() {
             if (progressInterval) clearInterval(progressInterval);
+            
             progressInterval = setInterval(async () => {
                 if (!currentShareId) return;
+                
                 try {
-                    const response = await fetch(`/api/share/progress?id=${currentShareId}`);
+                    const response = await fetch(`/api/share/${currentShareId}/progress`);
                     const data = await response.json();
+                    
                     if (data.status && data.share) {
-                        const share = data.share, percent = share.progress || 0;
+                        const share = data.share;
+                        const percent = share.progress || 0;
+                        
                         document.getElementById('progressFill').style.width = `${percent}%`;
                         document.getElementById('progressPercent').innerHTML = `${percent}%`;
                         document.getElementById('successCount').innerHTML = share.success || 0;
                         document.getElementById('failedCount').innerHTML = share.failed || 0;
+                        
                         if (share.status === 'completed' || share.status === 'failed' || share.status === 'cancelled') {
                             clearInterval(progressInterval);
                             document.getElementById('submitBtn').disabled = false;
                             document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start Campaign';
-                            if (share.status === 'completed') showAlert(`Campaign completed! ${share.success} successful shares`, 'success');
-                            else if (share.status === 'cancelled') showAlert('Campaign cancelled', 'info');
-                            else showAlert('Campaign failed. Check your cookie.', 'error');
+                            
+                            if (share.status === 'completed') {
+                                showAlert(`Campaign completed! ${share.success} successful shares`, 'success');
+                            } else if (share.status === 'cancelled') {
+                                showAlert('Campaign cancelled', 'info');
+                            } else {
+                                showAlert('Campaign failed. Check your cookie.', 'error');
+                            }
                             currentShareId = null;
                         }
                     }
-                } catch (error) { console.error('Progress error:', error); }
+                } catch (error) {
+                    console.error('Progress error:', error);
+                }
             }, 2000);
         }
 
@@ -331,12 +352,17 @@
             if (!currentShareId) return;
             if (confirm('Cancel this campaign?')) {
                 try {
-                    await fetch(`/api/share/cancel?id=${currentShareId}`);
-                    showAlert('Campaign cancelled', 'success');
-                    clearInterval(progressInterval);
-                    document.getElementById('submitBtn').disabled = false;
-                    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start Campaign';
-                    currentShareId = null;
+                    const response = await fetch(`/api/share/${currentShareId}/cancel`, {
+                        method: 'POST'
+                    });
+                    const data = await response.json();
+                    if (data.status) {
+                        showAlert('Campaign cancelled', 'success');
+                        clearInterval(progressInterval);
+                        document.getElementById('submitBtn').disabled = false;
+                        document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start Campaign';
+                        currentShareId = null;
+                    }
                 } catch (error) {
                     showAlert('Error: ' + error.message, 'error');
                 }
