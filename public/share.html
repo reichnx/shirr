@@ -9,14 +9,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             color: #fff;
         }
-
         .navbar {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px);
@@ -25,7 +23,6 @@
             top: 0;
             z-index: 1000;
         }
-
         .nav-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -36,7 +33,6 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
-
         .logo {
             font-size: 1.4rem;
             font-weight: 800;
@@ -48,13 +44,11 @@
             align-items: center;
             gap: 0.5rem;
         }
-
         .nav-links {
             display: flex;
             gap: 1rem;
             align-items: center;
         }
-
         .nav-links a {
             text-decoration: none;
             color: rgba(255, 255, 255, 0.7);
@@ -67,18 +61,15 @@
             border-radius: 12px;
             font-size: 0.9rem;
         }
-
         .nav-links a:hover, .nav-links a.active {
             color: #fff;
             background: rgba(255, 255, 255, 0.15);
         }
-
         .container {
             max-width: 600px;
             margin: 0 auto;
             padding: 1.5rem;
         }
-
         .glass-card {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
@@ -86,7 +77,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 1.5rem;
         }
-
         .form-title {
             font-size: 1.3rem;
             font-weight: 700;
@@ -96,7 +86,6 @@
             gap: 0.5rem;
             margin-bottom: 0.5rem;
         }
-
         .form-subtitle {
             color: rgba(255, 255, 255, 0.5);
             font-size: 0.8rem;
@@ -104,11 +93,9 @@
             padding-bottom: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .form-group {
             margin-bottom: 1.2rem;
         }
-
         label {
             display: block;
             margin-bottom: 0.5rem;
@@ -116,9 +103,7 @@
             color: rgba(255, 255, 255, 0.8);
             font-size: 0.8rem;
         }
-
         label i { margin-right: 0.5rem; }
-
         input, textarea {
             width: 100%;
             padding: 0.7rem 1rem;
@@ -130,27 +115,18 @@
             transition: all 0.3s;
             font-family: 'Inter', sans-serif;
         }
-
         input:focus, textarea:focus {
             outline: none;
             border-color: #667eea;
         }
-
         textarea { resize: vertical; min-height: 80px; }
-
         .info-text {
             font-size: 0.7rem;
             color: rgba(255, 255, 255, 0.4);
             margin-top: 0.4rem;
         }
-
         .range-value { color: #667eea; margin-left: 0.5rem; }
-
-        input[type="range"] {
-            padding: 0;
-            height: 4px;
-        }
-
+        input[type="range"] { padding: 0; height: 4px; }
         .btn-submit {
             width: 100%;
             padding: 0.8rem;
@@ -167,19 +143,15 @@
             justify-content: center;
             gap: 0.5rem;
         }
-
         .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3); }
         .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-
         .progress-section {
             margin-top: 1.5rem;
             padding-top: 1.5rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             display: none;
         }
-
         .progress-section.active { display: block; }
-
         .progress-header {
             display: flex;
             justify-content: space-between;
@@ -187,7 +159,6 @@
             font-size: 0.75rem;
             color: rgba(255, 255, 255, 0.6);
         }
-
         .progress-bar-container {
             width: 100%;
             height: 6px;
@@ -196,30 +167,25 @@
             overflow: hidden;
             margin-bottom: 1rem;
         }
-
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #667eea, #764ba2);
             transition: width 0.3s;
         }
-
         .stats-summary {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.8rem;
             margin: 1rem 0;
         }
-
         .stat-box {
             background: rgba(0, 0, 0, 0.3);
             padding: 0.8rem;
             border-radius: 12px;
             text-align: center;
         }
-
         .stat-box .label { font-size: 0.7rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 0.3rem; }
         .stat-box .value { font-size: 1.3rem; font-weight: 700; color: #667eea; }
-
         .share-id {
             background: rgba(0, 0, 0, 0.3);
             padding: 0.5rem;
@@ -229,7 +195,6 @@
             font-family: monospace;
             margin: 0.8rem 0;
         }
-
         .alert {
             padding: 0.6rem 1rem;
             border-radius: 10px;
@@ -239,11 +204,9 @@
             gap: 0.5rem;
             font-size: 0.8rem;
         }
-
         .alert-success { background: rgba(0, 255, 0, 0.1); border-left: 3px solid #00ff88; color: #00ff88; }
         .alert-error { background: rgba(255, 0, 0, 0.1); border-left: 3px solid #ff6666; color: #ff8888; }
         .alert-info { background: rgba(102, 126, 234, 0.1); border-left: 3px solid #667eea; color: #667eea; }
-
         @media (max-width: 768px) {
             .nav-container { flex-direction: column; text-align: center; }
             .container { padding: 1rem; }
@@ -266,30 +229,24 @@
     <div class="container">
         <div class="glass-card">
             <div class="form-title"><i class="fas fa-rocket"></i> New Campaign</div>
-            <div class="form-subtitle">Execute automated share campaign</div>
-
+            <div class="form-subtitle">Execute automated share campaign using GET request</div>
             <div id="alertContainer"></div>
-
-            <form id="shareForm">
+            <form id="shareForm" onsubmit="event.preventDefault(); startShare();">
                 <div class="form-group">
                     <label><i class="fas fa-key"></i> Facebook Cookie</label>
-                    <textarea name="cookie" placeholder="c_user=...; xs=..." required></textarea>
+                    <textarea id="cookie" placeholder="c_user=...; xs=..." required></textarea>
                     <div class="info-text"><i class="fas fa-info-circle"></i> Get from browser DevTools → Application → Cookies</div>
                 </div>
-
                 <div class="form-group">
                     <label><i class="fas fa-link"></i> Post Link</label>
-                    <input type="url" name="link" placeholder="https://www.facebook.com/..." required/>
+                    <input type="url" id="link" placeholder="https://www.facebook.com/..." required/>
                 </div>
-
                 <div class="form-group">
                     <label><i class="fas fa-chart-line"></i> Share Count <span class="range-value" id="limitValue">100</span></label>
-                    <input type="range" name="limit" min="1" max="5000" value="100" oninput="document.getElementById('limitValue').innerText = this.value"/>
+                    <input type="range" id="amount" min="1" max="5000" value="100" oninput="document.getElementById('limitValue').innerText = this.value"/>
                 </div>
-
                 <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-play"></i> Start Campaign</button>
             </form>
-
             <div class="progress-section" id="progressSection">
                 <div class="progress-header"><span>Execution Progress</span><span id="progressPercent">0%</span></div>
                 <div class="progress-bar-container"><div class="progress-fill" id="progressFill" style="width: 0%"></div></div>
@@ -305,33 +262,50 @@
 
     <script>
         let currentShareId = null, progressInterval = null;
-        document.getElementById('shareForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const data = { cookie: formData.get('cookie'), link: formData.get('link'), limit: parseInt(formData.get('limit')) };
-            if (!data.cookie || !data.link || !data.limit) { showAlert('Please fill all fields', 'error'); return; }
+
+        async function startShare() {
+            const cookie = document.getElementById('cookie').value;
+            const link = document.getElementById('link').value;
+            const amount = document.getElementById('amount').value;
+
+            if (!cookie || !link || !amount) {
+                showAlert('Please fill all fields', 'error');
+                return;
+            }
+
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Initializing...';
+
             try {
-                const response = await fetch('/api/share', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                const url = `/api/share?cookie=${encodeURIComponent(cookie)}&link=${encodeURIComponent(link)}&amount=${amount}`;
+                const response = await fetch(url);
                 const result = await response.json();
+
                 if (result.status === 'processing' && result.share_id) {
                     currentShareId = result.share_id;
                     showAlert('Campaign started successfully', 'success');
                     document.getElementById('progressSection').classList.add('active');
                     document.getElementById('shareIdDisplay').innerHTML = `Campaign ID: ${currentShareId}`;
                     startProgressMonitoring();
-                } else { showAlert('Failed: ' + (result.message || 'Unknown error'), 'error'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-play"></i> Start Campaign'; }
-            } catch (error) { showAlert('Network error: ' + error.message, 'error'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fas fa-play"></i> Start Campaign'; }
-        });
+                } else {
+                    showAlert('Failed: ' + (result.message || 'Unknown error'), 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-play"></i> Start Campaign';
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-play"></i> Start Campaign';
+            }
+        }
 
         function startProgressMonitoring() {
             if (progressInterval) clearInterval(progressInterval);
             progressInterval = setInterval(async () => {
                 if (!currentShareId) return;
                 try {
-                    const response = await fetch(`/api/share/${currentShareId}/progress`);
+                    const response = await fetch(`/api/share/progress?id=${currentShareId}`);
                     const data = await response.json();
                     if (data.status && data.share) {
                         const share = data.share, percent = share.progress || 0;
@@ -356,8 +330,16 @@
         async function cancelShare() {
             if (!currentShareId) return;
             if (confirm('Cancel this campaign?')) {
-                try { await fetch(`/api/share/${currentShareId}/cancel`, { method: 'POST' }); showAlert('Campaign cancelled', 'success'); clearInterval(progressInterval); document.getElementById('submitBtn').disabled = false; document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start Campaign'; currentShareId = null; } 
-                catch (error) { showAlert('Error: ' + error.message, 'error'); }
+                try {
+                    await fetch(`/api/share/cancel?id=${currentShareId}`);
+                    showAlert('Campaign cancelled', 'success');
+                    clearInterval(progressInterval);
+                    document.getElementById('submitBtn').disabled = false;
+                    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start Campaign';
+                    currentShareId = null;
+                } catch (error) {
+                    showAlert('Error: ' + error.message, 'error');
+                }
             }
         }
 
