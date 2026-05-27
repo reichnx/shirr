@@ -2,173 +2,147 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberShare | API Documentation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Facebook Share Booster - API Docs</title>
+    <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23667eea'/%3E%3Ctext x='50' y='68' font-size='50' text-anchor='middle' fill='white' font-weight='bold'%3EFS%3C/text%3E%3C/svg%3E">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at 20% 50%, rgba(15, 25, 45, 1) 0%, rgba(5, 10, 25, 1) 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
-            color: #e0e0e0;
-        }
-
-        .cyber-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 0;
-            animation: gridFloat 20s linear infinite;
-        }
-
-        @keyframes gridFloat {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(40px, 40px); }
+            color: #fff;
         }
 
         .navbar {
-            background: rgba(10, 20, 35, 0.7);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
 
         .nav-container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 1rem 2rem;
+            padding: 0.8rem 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 0.5rem;
         }
 
         .logo {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.6rem;
+            font-size: 1.1rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #00ffff, #ff00ff);
+            background: linear-gradient(135deg, #fff, #667eea);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.3rem;
         }
 
         .nav-links {
             display: flex;
-            gap: 1.5rem;
+            gap: 0.5rem;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .nav-links a {
             text-decoration: none;
-            color: #b0b0b0;
+            color: rgba(255, 255, 255, 0.7);
             font-weight: 500;
             transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
+            gap: 0.3rem;
+            padding: 0.4rem 0.8rem;
             border-radius: 10px;
+            font-size: 0.8rem;
         }
 
         .nav-links a:hover, .nav-links a.active {
-            color: #00ffff;
-            background: rgba(0, 255, 255, 0.1);
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-            z-index: 1;
+            padding: 1rem;
+        }
+
+        /* Glassmorphism Cards - Mobile First */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            margin-bottom: 1rem;
         }
 
         .api-header {
-            background: rgba(15, 25, 45, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            padding: 2rem;
-            margin-bottom: 2rem;
             text-align: center;
+            margin-bottom: 1rem;
         }
 
         .api-header h1 {
-            font-family: 'Orbitron', monospace;
-            font-size: 2rem;
-            color: #00ffff;
-            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #fff, #667eea);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.3rem;
         }
 
         .api-header p {
-            color: #888;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        .api-section {
-            background: rgba(15, 25, 45, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .api-section h2 {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.3rem;
-            color: #00ffff;
-            margin-bottom: 1.5rem;
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            color: #667eea;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            border-left: 3px solid #00ffff;
-            padding-left: 1rem;
+            border-left: 3px solid #667eea;
+            padding-left: 0.8rem;
         }
 
-        .endpoint {
+        /* Mobile-optimized endpoint cards */
+        .endpoint-card {
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(0, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .endpoint-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
-        }
-
-        .method {
+        .method-badge {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 6px;
+            padding: 0.2rem 0.6rem;
+            border-radius: 8px;
             font-weight: 700;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-family: monospace;
+            margin-right: 0.6rem;
         }
 
         .method-get {
             background: rgba(0, 255, 0, 0.2);
-            color: #00ff00;
+            color: #00ff88;
             border: 1px solid rgba(0, 255, 0, 0.3);
         }
 
@@ -180,199 +154,186 @@
 
         .endpoint-url {
             font-family: monospace;
-            font-size: 0.9rem;
-            color: #fff;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 0.25rem 0.75rem;
-            border-radius: 6px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+            word-break: break-all;
         }
 
         .description {
-            color: #aaa;
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+            margin: 0.5rem 0;
         }
 
-        .param-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-            font-size: 0.85rem;
+        /* Collapsible details for mobile */
+        .param-details {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .param-table th, .param-table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+        .param-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.7rem;
         }
 
-        .param-table th {
-            color: #00ffff;
+        .param-name {
             font-weight: 600;
+            color: #667eea;
         }
 
-        .code-block {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 1rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: #00ff00;
-            margin-top: 1rem;
+        .param-type {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.65rem;
         }
 
         .badge {
             display: inline-block;
-            padding: 0.2rem 0.5rem;
+            padding: 0.15rem 0.4rem;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             font-weight: 600;
-            margin-left: 0.5rem;
         }
 
         .badge-required {
             background: rgba(255, 0, 0, 0.2);
+            color: #ff8888;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.6rem;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.65rem;
+            color: #00ff88;
+            margin-top: 0.6rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .grid-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .error-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 0.4rem;
+        }
+
+        .error-code {
+            font-weight: 700;
             color: #ff6666;
-            border: 1px solid rgba(255, 0, 0, 0.3);
+            font-size: 0.8rem;
         }
 
-        .badge-optional {
-            background: rgba(255, 165, 0, 0.2);
-            color: #ffaa44;
-            border: 1px solid rgba(255, 165, 0, 0.3);
+        .error-desc {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
         }
 
-        .grid-2col {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1rem;
+        hr {
+            border-color: rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
         }
 
-        @media (max-width: 768px) {
-            .container { padding: 1rem; }
-            .api-header h1 { font-size: 1.5rem; }
-            .endpoint-header { flex-direction: column; align-items: flex-start; }
+        @media (min-width: 768px) {
+            .container { max-width: 500px; margin: 0 auto; }
         }
     </style>
 </head>
 <body>
-    <div class="cyber-bg"></div>
-
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo">
-                <i class="fas fa-shield-alt"></i>
-                <span>CYBERSHARE</span>
-            </div>
+            <div class="logo"><i class="fab fa-facebook"></i><span>Facebook Share Booster</span></div>
             <div class="nav-links">
-                <a href="/"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="/"><i class="fas fa-home"></i> Home</a>
                 <a href="/share"><i class="fas fa-share-alt"></i> Share</a>
-                <a href="/api-docs" class="active"><i class="fas fa-code"></i> API Docs</a>
+                <a href="/api-docs" class="active"><i class="fas fa-code"></i> API</a>
             </div>
         </div>
     </nav>
 
     <div class="container">
-        <div class="api-header">
-            <h1><i class="fas fa-code"></i> API REFERENCE</h1>
-            <p>Complete documentation for CyberShare REST API endpoints</p>
+        <div class="glass-card">
+            <div class="api-header">
+                <h1><i class="fas fa-code"></i> API Reference</h1>
+                <p>REST API endpoints for Facebook Share Booster</p>
+            </div>
         </div>
 
-        <!-- Share Endpoints -->
-        <div class="api-section">
-            <h2><i class="fas fa-share-alt"></i> SHARE OPERATIONS</h2>
+        <!-- Share Operations -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-share-alt"></i> Share Operations</div>
             
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method method-post">POST</span>
-                    <span class="endpoint-url">/api/share</span>
+            <div class="endpoint-card">
+                <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/api/share</span></div>
+                <div class="description">Start a new share campaign</div>
+                <div class="param-details">
+                    <div class="param-item"><span class="param-name">cookie</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
+                    <div class="param-item"><span class="param-name">link</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
+                    <div class="param-item"><span class="param-name">limit</span><span class="param-type">integer <span class="badge badge-required">required</span></span></div>
                 </div>
-                <div class="description">Execute a new share campaign</div>
-                <table class="param-table">
-                    <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
-                    <tbody>
-                        <tr><td>cookie</td><td>string</td><td><span class="badge badge-required">Required</span></td><td>Facebook authentication cookie</td></tr>
-                        <tr><td>link</td><td>string</td><td><span class="badge badge-required">Required</span></td><td>Facebook post URL to share</td></tr>
-                        <tr><td>limit</td><td>integer</td><td><span class="badge badge-required">Required</span></td><td>Number of shares (1-5000)</td></tr>
-                    </tbody>
-                </table>
-                <div class="code-block">
-                    {<br>
-                    &nbsp;&nbsp;"cookie": "c_user=123456; xs=abcdef",<br>
-                    &nbsp;&nbsp;"link": "https://www.facebook.com/post/123",<br>
-                    &nbsp;&nbsp;"limit": 100<br>
-                    }
-                </div>
+                <div class="code-block">{<br>  "cookie": "c_user=...; xs=...",<br>  "link": "https://facebook.com/post",<br>  "limit": 100<br>}</div>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method method-get">GET</span>
-                    <span class="endpoint-url">/api/share/:id/progress</span>
-                </div>
-                <div class="description">Monitor campaign progress in real-time</div>
-                <div class="code-block">
-                    Response: { "status": true, "share": { "progress": 45, "success": 45, "failed": 0, "status": "processing" } }
-                </div>
+            <div class="endpoint-card">
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/api/share/:id/progress</span></div>
+                <div class="description">Monitor campaign progress</div>
+                <div class="code-block">Response: { "progress": 45, "success": 45, "status": "processing" }</div>
             </div>
 
-            <div class="endpoint">
-                <div class="endpoint-header">
-                    <span class="method method-post">POST</span>
-                    <span class="endpoint-url">/api/share/:id/cancel</span>
-                </div>
-                <div class="description">Terminate an active campaign</div>
+            <div class="endpoint-card">
+                <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/api/share/:id/cancel</span></div>
+                <div class="description">Cancel active campaign</div>
             </div>
         </div>
 
         <!-- Data Endpoints -->
-        <div class="api-section">
-            <h2><i class="fas fa-database"></i> DATA & STATISTICS</h2>
-            <div class="grid-2col">
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method method-get">GET</span>
-                        <span class="endpoint-url">/api/history</span>
-                    </div>
-                    <div class="description">View share campaign history</div>
-                </div>
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method method-get">GET</span>
-                        <span class="endpoint-url">/api/stats</span>
-                    </div>
-                    <div class="description">Get overall system statistics</div>
-                </div>
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method method-get">GET</span>
-                        <span class="endpoint-url">/api/running-shares</span>
-                    </div>
-                    <div class="description">List all active campaigns</div>
-                </div>
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method method-get">GET</span>
-                        <span class="endpoint-url">/api/health</span>
-                    </div>
-                    <div class="description">System health check</div>
-                </div>
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-database"></i> Data & Stats</div>
+            
+            <div class="endpoint-card">
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/api/history</span></div>
+                <div class="description">View share history (limit: 20)</div>
+            </div>
+
+            <div class="endpoint-card">
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/api/stats</span></div>
+                <div class="description">Get system statistics</div>
+                <div class="code-block">Response: { "total_shares": 1250, "success_rate": 94 }</div>
+            </div>
+
+            <div class="endpoint-card">
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/api/running-shares</span></div>
+                <div class="description">List active campaigns</div>
+            </div>
+
+            <div class="endpoint-card">
+                <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/api/health</span></div>
+                <div class="description">Health check endpoint</div>
             </div>
         </div>
 
         <!-- Error Codes -->
-        <div class="api-section">
-            <h2><i class="fas fa-exclamation-triangle"></i> ERROR CODES</h2>
-            <table class="param-table">
-                <thead><tr><th>Code</th><th>Description</th></tr></thead>
-                <tbody>
-                    <tr><td>400</td><td>Bad Request - Missing or invalid parameters</td></tr>
-                    <tr><td>404</td><td>Not Found - Campaign not found</td></tr>
-                    <tr><td>429</td><td>Too Many Requests - Rate limit exceeded</td></tr>
-                    <tr><td>500</td><td>Internal Server Error</td></tr>
-                </tbody>
-            </table>
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-exclamation-triangle"></i> Error Codes</div>
+            <div class="error-item"><span class="error-code">400</span><span class="error-desc">Bad Request - Invalid parameters</span></div>
+            <div class="error-item"><span class="error-code">404</span><span class="error-desc">Not Found - Campaign not found</span></div>
+            <div class="error-item"><span class="error-code">429</span><span class="error-desc">Too Many Requests - Slow down</span></div>
+            <div class="error-item"><span class="error-code">500</span><span class="error-desc">Internal Server Error</span></div>
         </div>
     </div>
 </body>
