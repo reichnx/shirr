@@ -8,20 +8,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             color: #fff;
+            overflow-x: hidden;
         }
-
-        /* Glassmorphism Navbar */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(102, 126, 234, 0.6); }
+        }
+        @keyframes rainbow {
+            0% { border-color: #ff0000; }
+            17% { border-color: #ff8800; }
+            33% { border-color: #ffff00; }
+            50% { border-color: #00ff00; }
+            67% { border-color: #0088ff; }
+            83% { border-color: #4400ff; }
+            100% { border-color: #ff00ff; }
+        }
         .navbar {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(20px);
@@ -30,9 +41,8 @@
             top: 0;
             z-index: 1000;
         }
-
         .nav-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 1rem 1.5rem;
             display: flex;
@@ -41,7 +51,6 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
-
         .logo {
             font-size: 1.4rem;
             font-weight: 800;
@@ -53,20 +62,12 @@
             align-items: center;
             gap: 0.5rem;
         }
-
-        .logo i {
-            background: none;
-            -webkit-background-clip: unset;
-            color: #667eea;
-        }
-
         .nav-links {
             display: flex;
             gap: 1rem;
             align-items: center;
             flex-wrap: wrap;
         }
-
         .nav-links a {
             text-decoration: none;
             color: rgba(255, 255, 255, 0.7);
@@ -79,28 +80,21 @@
             border-radius: 12px;
             font-size: 0.9rem;
         }
-
         .nav-links a:hover, .nav-links a.active {
             color: #fff;
             background: rgba(255, 255, 255, 0.15);
         }
-
-        /* Main Container */
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 1.5rem;
         }
-
-        /* Glassmorphism Stats Cards */
-        .stats-grid {
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
         }
-
-        .stat-card {
+        .glass-card {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             border-radius: 20px;
@@ -108,47 +102,10 @@
             padding: 1.2rem;
             transition: all 0.3s;
         }
-
-        .stat-card:hover {
+        .glass-card:hover {
             background: rgba(255, 255, 255, 0.12);
             transform: translateY(-2px);
         }
-
-        .stat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.8rem;
-        }
-
-        .stat-header i {
-            font-size: 2rem;
-            color: #667eea;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 0.3rem;
-        }
-
-        .stat-label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-        }
-
-        /* Glassmorphism Quick Actions */
-        .quick-actions {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1.2rem;
-            margin-bottom: 1.5rem;
-        }
-
         .section-title {
             font-size: 1.1rem;
             font-weight: 700;
@@ -157,14 +114,114 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            border-left: 3px solid #667eea;
+            padding-left: 0.8rem;
         }
-
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .stat-header i {
+            font-size: 1.8rem;
+            color: #667eea;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+        }
+        /* TikTok Video Player */
+        .video-container {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            animation: glow 3s ease-in-out infinite;
+        }
+        .video-container video {
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+            display: block;
+        }
+        .rainbow-border {
+            border: 3px solid;
+            border-radius: 20px;
+            animation: rainbow 3s linear infinite;
+            padding: 2px;
+        }
+        .video-info {
+            margin-top: 0.8rem;
+        }
+        .video-author {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.3rem;
+        }
+        .video-title {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+        .btn-next {
+            width: 100%;
+            padding: 0.7rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+        }
+        .btn-next:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        .quick-actions {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
         .action-buttons {
             display: flex;
             gap: 0.8rem;
             flex-wrap: wrap;
         }
-
         .btn {
             padding: 0.6rem 1.2rem;
             border: none;
@@ -178,62 +235,48 @@
             gap: 0.5rem;
             text-decoration: none;
         }
-
         .btn-primary {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
         }
-
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
         }
-
         .btn-secondary {
             background: rgba(255, 255, 255, 0.15);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        /* Glassmorphism History Table */
         .history-section {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 1.2rem;
+            margin-top: 1.5rem;
         }
-
         .table-wrapper {
             overflow-x: auto;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
         }
-
         th, td {
             padding: 0.8rem;
             text-align: left;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         th {
             color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
             font-size: 0.75rem;
         }
-
         td {
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.8rem;
         }
-
         .status-badge {
             display: inline-block;
             padding: 0.2rem 0.6rem;
@@ -241,22 +284,9 @@
             font-size: 0.7rem;
             font-weight: 600;
         }
-
-        .status-completed {
-            background: rgba(0, 255, 0, 0.2);
-            color: #00ff88;
-        }
-
-        .status-processing {
-            background: rgba(255, 165, 0, 0.2);
-            color: #ffa500;
-        }
-
-        .status-failed {
-            background: rgba(255, 0, 0, 0.2);
-            color: #ff6666;
-        }
-
+        .status-completed { background: rgba(0, 255, 0, 0.2); color: #00ff88; }
+        .status-processing { background: rgba(255, 165, 0, 0.2); color: #ffa500; }
+        .status-failed { background: rgba(255, 0, 0, 0.2); color: #ff6666; }
         .progress-bar {
             width: 80px;
             height: 4px;
@@ -264,18 +294,12 @@
             border-radius: 2px;
             overflow: hidden;
         }
-
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #667eea, #764ba2);
             transition: width 0.3s;
         }
-
-        .loading {
-            text-align: center;
-            padding: 2rem;
-        }
-
+        .loading { text-align: center; padding: 2rem; }
         .spinner {
             width: 30px;
             height: 30px;
@@ -285,26 +309,64 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 0.5rem;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Privacy Popup */
+        .privacy-popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            max-width: 350px;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            padding: 1rem;
+            z-index: 2000;
+            animation: float 3s ease-in-out infinite;
         }
-
+        .privacy-popup p {
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .privacy-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-accept {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .btn-decline {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        @media (max-width: 1024px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
         @media (max-width: 768px) {
             .nav-container { flex-direction: column; text-align: center; }
-            .stat-value { font-size: 1.5rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .stat-value { font-size: 1.3rem; }
             th, td { padding: 0.5rem; font-size: 0.7rem; }
-            .container { padding: 1rem; }
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo">
-                <i class="fab fa-facebook"></i>
-                <span>Facebook Share Booster</span>
-            </div>
+            <div class="logo"><i class="fab fa-facebook"></i><span>Facebook Share Booster</span></div>
             <div class="nav-links">
                 <a href="/" class="active"><i class="fas fa-home"></i> Dashboard</a>
                 <a href="/share"><i class="fas fa-share-alt"></i> Share</a>
@@ -315,36 +377,32 @@
 
     <div class="container">
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header"><i class="fas fa-chart-line"></i></div>
-                <div class="stat-value" id="totalShares">0</div>
-                <div class="stat-label">TOTAL SHARES</div>
+            <div class="stat-card"><div class="stat-header"><i class="fas fa-chart-line"></i></div><div class="stat-value" id="totalShares">0</div><div class="stat-label">TOTAL SHARES</div></div>
+            <div class="stat-card"><div class="stat-header"><i class="fas fa-check-circle"></i></div><div class="stat-value" id="totalSuccess">0</div><div class="stat-label">SUCCESSFUL</div></div>
+            <div class="stat-card"><div class="stat-header"><i class="fas fa-times-circle"></i></div><div class="stat-value" id="totalFailed">0</div><div class="stat-label">FAILED</div></div>
+            <div class="stat-card"><div class="stat-header"><i class="fas fa-percent"></i></div><div class="stat-value" id="successRate">0%</div><div class="stat-label">SUCCESS RATE</div></div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Left Column: TikTok Video Feed -->
+            <div class="glass-card">
+                <div class="section-title"><i class="fab fa-tiktok"></i> TikTok Feed</div>
+                <div id="videoContainer">
+                    <div class="loading"><div class="spinner"></div>Loading video...</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-header"><i class="fas fa-check-circle"></i></div>
-                <div class="stat-value" id="totalSuccess">0</div>
-                <div class="stat-label">SUCCESSFUL</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header"><i class="fas fa-times-circle"></i></div>
-                <div class="stat-value" id="totalFailed">0</div>
-                <div class="stat-label">FAILED</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header"><i class="fas fa-percent"></i></div>
-                <div class="stat-value" id="successRate">0%</div>
-                <div class="stat-label">SUCCESS RATE</div>
+
+            <!-- Right Column: Quick Actions -->
+            <div class="glass-card">
+                <div class="section-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+                <div class="action-buttons">
+                    <a href="/share" class="btn btn-primary"><i class="fas fa-plus"></i> New Campaign</a>
+                    <button class="btn btn-secondary" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh Stats</button>
+                </div>
             </div>
         </div>
 
-        <div class="quick-actions">
-            <div class="section-title"><i class="fas fa-bolt"></i> Quick Actions</div>
-            <div class="action-buttons">
-                <a href="/share" class="btn btn-primary"><i class="fas fa-plus"></i> New Campaign</a>
-                <button class="btn btn-secondary" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
-            </div>
-        </div>
-
+        <!-- History Section -->
         <div class="history-section">
             <div class="section-title"><i class="fas fa-history"></i> Recent History</div>
             <div class="table-wrapper">
@@ -356,8 +414,70 @@
         </div>
     </div>
 
+    <!-- Privacy Policy Popup -->
+    <div id="privacyPopup" class="privacy-popup">
+        <p><i class="fas fa-shield-alt" style="color:#667eea; margin-right:0.5rem;"></i> We value your privacy. This website uses cookies and collects data for sharing functionality. By continuing, you agree to our Privacy Policy.</p>
+        <div class="privacy-buttons">
+            <button class="btn-accept" onclick="acceptPrivacy()"><i class="fas fa-check"></i> Accept</button>
+            <button class="btn-decline" onclick="declinePrivacy()"><i class="fas fa-times"></i> Decline</button>
+        </div>
+    </div>
+
     <script>
         const API_BASE = window.location.origin;
+        let currentVideoUrl = '';
+
+        // Privacy Popup
+        function acceptPrivacy() {
+            localStorage.setItem('privacyAccepted', 'true');
+            document.getElementById('privacyPopup').style.display = 'none';
+        }
+        function declinePrivacy() {
+            localStorage.setItem('privacyAccepted', 'false');
+            document.getElementById('privacyPopup').style.display = 'none';
+            alert('You declined. Some features may be limited.');
+        }
+        if (localStorage.getItem('privacyAccepted') === 'true') {
+            document.getElementById('privacyPopup').style.display = 'none';
+        }
+
+        // Load TikTok Video
+        async function loadTikTokVideo() {
+            const container = document.getElementById('videoContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading video...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/tiktok-video`);
+                const data = await response.json();
+                
+                if (data.status && data.video && data.video.url) {
+                    currentVideoUrl = data.video.url;
+                    container.innerHTML = `
+                        <div class="rainbow-border">
+                            <div class="video-container">
+                                <video controls autoplay loop>
+                                    <source src="${data.video.url}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <div class="video-author"><i class="fab fa-tiktok"></i> @${data.video.author || data.video.nickname || 'unknown'}</div>
+                            <div class="video-title">${data.video.title || 'TikTok Video'}</div>
+                            <div class="video-title" style="font-size:0.7rem;">Region: ${data.video.region || 'PH'} | Duration: ${data.video.duration || 0}s</div>
+                        </div>
+                        <button class="btn-next" onclick="loadTikTokVideo()"><i class="fas fa-forward"></i> Next Video</button>
+                    `;
+                } else {
+                    container.innerHTML = '<div class="loading">Failed to load video. <button class="btn-next" onclick="loadTikTokVideo()" style="margin-top:1rem;">Try Again</button></div>';
+                }
+            } catch (error) {
+                console.error('Video load error:', error);
+                container.innerHTML = '<div class="loading">Error loading video. <button class="btn-next" onclick="loadTikTokVideo()" style="margin-top:1rem;">Retry</button></div>';
+            }
+        }
+
+        // Load Stats
         async function loadStats() {
             try {
                 const res = await fetch(`${API_BASE}/api/stats`);
@@ -370,6 +490,8 @@
                 }
             } catch (err) { console.error(err); }
         }
+
+        // Load History
         async function loadHistory() {
             try {
                 const res = await fetch(`${API_BASE}/api/history?limit=20`);
@@ -384,16 +506,22 @@
                             <td><span class="status-badge status-${item.status}">${item.status}</span></td>
                             <td><div class="progress-bar"><div class="progress-fill" style="width: ${item.progress || 0}%"></div></div></td>
                             <td>${new Date(item.startTime).toLocaleString()}</td>
-                        </tr>
-                    `).join('');
+                        `
+                    ).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No history found</td></tr>';
                 }
             } catch (err) { console.error(err); }
         }
-        async function refreshData() { await Promise.all([loadStats(), loadHistory()]); }
-        setInterval(refreshData, 10000);
+
+        async function refreshData() {
+            await Promise.all([loadStats(), loadHistory()]);
+        }
+
+        // Initial loads
+        loadTikTokVideo();
         refreshData();
+        setInterval(refreshData, 10000);
     </script>
 </body>
 </html>
