@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>FBS API - Dashboard</title>
+    <title>Facebook Share Booster - Dashboard</title>
     <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23667eea'/%3E%3Ctext x='50' y='68' font-size='50' text-anchor='middle' fill='white' font-weight='bold'%3EFS%3C/text%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -11,7 +11,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a3e 50%, #0f3460 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             color: #fff;
             overflow-x: hidden;
@@ -35,10 +35,6 @@
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.02); }
         }
         .navbar {
             background: rgba(255, 255, 255, 0.08);
@@ -68,20 +64,6 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-        }
-        .logo span {
-            background: linear-gradient(135deg, #fff, #667eea);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .fbs-badge {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            padding: 0.2rem 0.5rem;
-            border-radius: 20px;
-            font-size: 0.6rem;
-            font-weight: 600;
-            margin-left: 0.5rem;
         }
         .nav-links {
             display: flex;
@@ -151,7 +133,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 1rem;
             transition: all 0.3s;
-            text-align: center;
         }
         .stat-card:hover {
             transform: translateY(-2px);
@@ -159,12 +140,12 @@
         }
         .stat-header {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 0.5rem;
         }
         .stat-header i {
-            font-size: 2rem;
+            font-size: 1.8rem;
             color: #667eea;
         }
         .stat-value {
@@ -293,7 +274,7 @@
             font-weight: 600;
         }
         .status-completed { background: rgba(0, 255, 0, 0.2); color: #00ff88; }
-        .status-processing { background: rgba(255, 165, 0, 0.2); color: #ffa500; animation: pulse 1s infinite; }
+        .status-processing { background: rgba(255, 165, 0, 0.2); color: #ffa500; }
         .status-failed { background: rgba(255, 0, 0, 0.2); color: #ff6666; }
         .status-cancelled { background: rgba(255, 165, 0, 0.2); color: #ffa500; }
         .progress-bar {
@@ -358,21 +339,6 @@
             cursor: pointer;
             font-size: 0.75rem;
         }
-        .info-panel {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            padding: 0.8rem;
-            margin-top: 1rem;
-        }
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.3rem 0;
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        .info-item i { width: 20px; color: #667eea; }
         @media (max-width: 1024px) {
             .dashboard-grid { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -389,14 +355,10 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo">
-                <i class="fab fa-facebook"></i>
-                <span>FBS API</span>
-                <span class="fbs-badge">SMART DUAL API</span>
-            </div>
+            <div class="logo"><i class="fab fa-facebook"></i><span>Facebook Share Booster</span></div>
             <div class="nav-links">
                 <a href="/" class="active"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="/share"><i class="fas fa-share-alt"></i> New Campaign</a>
+                <a href="/share.html"><i class="fas fa-share-alt"></i> Share</a>
                 <a href="/api-docs"><i class="fas fa-code"></i> API Docs</a>
             </div>
         </div>
@@ -421,36 +383,29 @@
             <div class="glass-card">
                 <div class="section-title"><i class="fas fa-bolt"></i> Quick Actions</div>
                 <div class="action-buttons">
-                    <a href="/share" class="btn btn-primary"><i class="fas fa-plus"></i> New Campaign</a>
-                    <button class="btn btn-secondary" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh</button>
-                </div>
-                <div class="info-panel">
-                    <div class="info-item"><i class="fas fa-microchip"></i> <strong>FBS Smart Dual API</strong> - 2 APIs working as one</div>
-                    <div class="info-item"><i class="fas fa-random"></i> Auto load balancing + Auto failover</div>
-                    <div class="info-item"><i class="fas fa-chart-line"></i> Target guaranteed: If one API fails, the other takes over</div>
-                    <div class="info-item"><i class="fas fa-bolt"></i> Speed: 20 shares / 2 seconds</div>
-                    <div class="info-item"><i class="fas fa-check-circle"></i> Max limit: 1000 shares per campaign</div>
+                    <a href="/share.html" class="btn btn-primary"><i class="fas fa-plus"></i> New Campaign</a>
+                    <button class="btn btn-secondary" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Refresh Stats</button>
                 </div>
             </div>
         </div>
 
         <div class="history-section">
-            <div class="section-title"><i class="fas fa-history"></i> Recent Campaigns</div>
+            <div class="section-title"><i class="fas fa-history"></i> Recent History</div>
             <div class="table-wrapper">
-                 <table>
+                <table>
                     <thead>
                         <tr><th>ID</th><th>LINK</th><th>RESULTS</th><th>STATUS</th><th>PROGRESS</th><th>DATE</th></tr>
                     </thead>
                     <tbody id="historyBody">
                         <tr><td colspan="6" class="loading"><div class="spinner"></div>Loading...</td></tr>
                     </tbody>
-                 </table>
+                </table>
             </div>
         </div>
     </div>
 
     <div id="privacyPopup" class="privacy-popup">
-        <p><i class="fas fa-shield-alt" style="color:#667eea; margin-right:0.5rem;"></i> FBS API uses smart dual API technology. By continuing, you agree to our terms.</p>
+        <p><i class="fas fa-shield-alt" style="color:#667eea; margin-right:0.5rem;"></i> We value your privacy. This website uses cookies and collects data for sharing functionality. By continuing, you agree to our Privacy Policy.</p>
         <div class="privacy-buttons">
             <button class="btn-accept" onclick="acceptPrivacy()"><i class="fas fa-check"></i> Accept</button>
             <button class="btn-decline" onclick="declinePrivacy()"><i class="fas fa-times"></i> Decline</button>
@@ -459,17 +414,28 @@
 
     <script>
         const API_BASE = window.location.origin;
-        
-        function acceptPrivacy() { localStorage.setItem('privacyAccepted', 'true'); document.getElementById('privacyPopup').style.display = 'none'; }
-        function declinePrivacy() { localStorage.setItem('privacyAccepted', 'false'); document.getElementById('privacyPopup').style.display = 'none'; alert('You declined. Some features may be limited.'); }
-        if (localStorage.getItem('privacyAccepted') === 'true') { document.getElementById('privacyPopup').style.display = 'none'; }
+
+        function acceptPrivacy() {
+            localStorage.setItem('privacyAccepted', 'true');
+            document.getElementById('privacyPopup').style.display = 'none';
+        }
+        function declinePrivacy() {
+            localStorage.setItem('privacyAccepted', 'false');
+            document.getElementById('privacyPopup').style.display = 'none';
+            alert('You declined. Some features may be limited.');
+        }
+        if (localStorage.getItem('privacyAccepted') === 'true') {
+            document.getElementById('privacyPopup').style.display = 'none';
+        }
 
         async function loadTikTokVideo() {
             const container = document.getElementById('videoContainer');
             container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading video...</div>';
+            
             try {
                 const response = await fetch(`${API_BASE}/api/tiktok-video`);
                 const data = await response.json();
+                
                 if (data.status && data.video && data.video.url) {
                     container.innerHTML = `
                         <div class="rainbow-border">
@@ -483,11 +449,14 @@
                         <button class="btn-next" onclick="loadTikTokVideo()"><i class="fas fa-forward"></i> Next Video</button>
                     `;
                     const video = container.querySelector('video');
-                    if (video) video.play().catch(e => console.log('Auto-play prevented:', e));
+                    if (video) {
+                        video.play().catch(e => console.log('Auto-play prevented:', e));
+                    }
                 } else {
                     container.innerHTML = '<div class="loading">Failed to load video. <button class="btn-next" onclick="loadTikTokVideo()" style="margin-top:1rem;">Try Again</button></div>';
                 }
             } catch (error) {
+                console.error('Video load error:', error);
                 container.innerHTML = '<div class="loading">Error loading video. <button class="btn-next" onclick="loadTikTokVideo()" style="margin-top:1rem;">Retry</button></div>';
             }
         }
@@ -514,7 +483,7 @@
                     tbody.innerHTML = data.history.map(item => `
                         <tr>
                             <td>${item.id ? item.id.slice(-8) : 'N/A'}</td>
-                            <td><a href="${item.link}" target="_blank" style="color:#667eea;">${item.link ? item.link.substring(0, 30) : 'N/A'}...</a></td>
+                            <td><a href="${item.link}" target="_blank" style="color:#667eea;">${item.link ? item.link.substring(0, 25) : 'N/A'}...</a></td>
                             <td>${item.success || 0}/${item.requested || 0}</td>
                             <td><span class="status-badge status-${item.status || 'failed'}">${item.status || 'failed'}</span></td>
                             <td><div class="progress-bar"><div class="progress-fill" style="width: ${item.progress || 0}%"></div></div></td>
@@ -522,13 +491,15 @@
                         </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No campaigns found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No history found</td></tr>';
                 }
             } catch (err) { console.error(err); }
         }
 
-        async function refreshData() { await Promise.all([loadStats(), loadHistory()]); }
-        
+        async function refreshData() {
+            await Promise.all([loadStats(), loadHistory()]);
+        }
+
         loadTikTokVideo();
         refreshData();
         setInterval(refreshData, 10000);
