@@ -3,24 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Share Bot - API Documentation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>CyberShare | API Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #f3f4f6;
+            background: radial-gradient(circle at 20% 50%, rgba(15, 25, 45, 1) 0%, rgba(5, 10, 25, 1) 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .cyber-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridFloat 20s linear infinite;
+        }
+
+        @keyframes gridFloat {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, 40px); }
         }
 
         .navbar {
-            background: white;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            background: rgba(10, 20, 35, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.3);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -38,9 +56,10 @@
         }
 
         .logo {
-            font-size: 1.8rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #00ffff, #ff00ff);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -51,15 +70,14 @@
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
             align-items: center;
-            flex-wrap: wrap;
         }
 
         .nav-links a {
             text-decoration: none;
-            color: #4b5563;
-            font-weight: 600;
+            color: #b0b0b0;
+            font-weight: 500;
             transition: all 0.3s;
             display: flex;
             align-items: center;
@@ -69,59 +87,74 @@
         }
 
         .nav-links a:hover, .nav-links a.active {
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
+            color: #00ffff;
+            background: rgba(0, 255, 255, 0.1);
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
+            position: relative;
+            z-index: 1;
         }
 
         .api-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 3rem;
+            background: rgba(15, 25, 45, 0.6);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 2rem;
             margin-bottom: 2rem;
             text-align: center;
         }
 
         .api-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            color: #00ffff;
+            margin-bottom: 0.5rem;
         }
 
         .api-header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+            color: #888;
         }
 
         .api-section {
-            background: white;
+            background: rgba(15, 25, 45, 0.6);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
         }
 
         .api-section h2 {
-            color: #1f2937;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: #00ffff;
             margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 0.5rem;
+            border-left: 3px solid #00ffff;
+            padding-left: 1rem;
         }
 
         .endpoint {
-            background: #f9fafb;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid #667eea;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
         }
 
         .method {
@@ -129,353 +162,217 @@
             padding: 0.25rem 0.75rem;
             border-radius: 6px;
             font-weight: 700;
-            font-size: 0.85rem;
-            margin-right: 1rem;
+            font-size: 0.75rem;
+            font-family: monospace;
         }
 
         .method-get {
-            background: #d1fae5;
-            color: #065f46;
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid rgba(0, 255, 0, 0.3);
         }
 
         .method-post {
-            background: #dbeafe;
-            color: #1e40af;
+            background: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            border: 1px solid rgba(0, 255, 255, 0.3);
         }
 
         .endpoint-url {
             font-family: monospace;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1f2937;
+            font-size: 0.9rem;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
         }
 
         .description {
-            margin: 1rem 0;
-            color: #4b5563;
-        }
-
-        .code-block {
-            background: #1f2937;
-            color: #f3f4f6;
-            padding: 1rem;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: monospace;
-            font-size: 0.9rem;
-            margin-top: 1rem;
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
         }
 
         .param-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
+            font-size: 0.85rem;
         }
 
         .param-table th, .param-table td {
             padding: 0.75rem;
             text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
         }
 
         .param-table th {
-            background: #f9fafb;
+            color: #00ffff;
             font-weight: 600;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #00ff00;
+            margin-top: 1rem;
         }
 
         .badge {
             display: inline-block;
-            padding: 0.25rem 0.5rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             margin-left: 0.5rem;
         }
 
         .badge-required {
-            background: #fee2e2;
-            color: #991b1b;
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6666;
+            border: 1px solid rgba(255, 0, 0, 0.3);
         }
 
         .badge-optional {
-            background: #e5e7eb;
-            color: #4b5563;
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffaa44;
+            border: 1px solid rgba(255, 165, 0, 0.3);
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .api-header {
-                padding: 2rem;
-            }
-            
-            .api-header h1 {
-                font-size: 1.8rem;
-            }
-            
-            .endpoint {
-                padding: 1rem;
-            }
+            .container { padding: 1rem; }
+            .api-header h1 { font-size: 1.5rem; }
+            .endpoint-header { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
+    <div class="cyber-bg"></div>
+
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <i class="fab fa-facebook"></i>
-                <span>ShareBot</span>
+                <i class="fas fa-shield-alt"></i>
+                <span>CYBERSHARE</span>
             </div>
             <div class="nav-links">
-                <a href="/">
-                    <i class="fas fa-home"></i>
-                    Dashboard
-                </a>
-                <a href="/share">
-                    <i class="fas fa-share-alt"></i>
-                    New Share
-                </a>
-                <a href="/api-docs" class="active">
-                    <i class="fas fa-book"></i>
-                    API Docs
-                </a>
+                <a href="/"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="/share"><i class="fas fa-share-alt"></i> Share</a>
+                <a href="/api-docs" class="active"><i class="fas fa-code"></i> API Docs</a>
             </div>
         </div>
     </nav>
 
     <div class="container">
         <div class="api-header">
-            <h1><i class="fas fa-code"></i> API Documentation</h1>
-            <p>Complete reference for Facebook Share Bot API endpoints</p>
-            <p style="margin-top: 1rem; font-size: 0.9rem;">
-                <i class="fas fa-tachometer-alt"></i> Rate: 5 shares per 2 seconds | 
-                <i class="fas fa-chart-line"></i> Max: 5000 shares per campaign
-            </p>
+            <h1><i class="fas fa-code"></i> API REFERENCE</h1>
+            <p>Complete documentation for CyberShare REST API endpoints</p>
         </div>
 
-        <!-- Share Endpoint -->
+        <!-- Share Endpoints -->
         <div class="api-section">
-            <h2><i class="fas fa-share-alt"></i> Share Operations</h2>
+            <h2><i class="fas fa-share-alt"></i> SHARE OPERATIONS</h2>
             
             <div class="endpoint">
-                <div>
+                <div class="endpoint-header">
                     <span class="method method-post">POST</span>
                     <span class="endpoint-url">/api/share</span>
                 </div>
-                <div class="description">
-                    Start a new share campaign. Shares at 5 requests per 2 seconds.
-                </div>
-                
+                <div class="description">Execute a new share campaign</div>
                 <table class="param-table">
-                    <thead>
-                        <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
-                    </thead>
+                    <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
                     <tbody>
-                        <tr><td>cookie</td><td>string</td><td><span class="badge badge-required">Required</span></td><td>Facebook cookie for authentication</td></tr>
+                        <tr><td>cookie</td><td>string</td><td><span class="badge badge-required">Required</span></td><td>Facebook authentication cookie</td></tr>
                         <tr><td>link</td><td>string</td><td><span class="badge badge-required">Required</span></td><td>Facebook post URL to share</td></tr>
                         <tr><td>limit</td><td>integer</td><td><span class="badge badge-required">Required</span></td><td>Number of shares (1-5000)</td></tr>
                     </tbody>
                 </table>
-                
                 <div class="code-block">
-                    // Example Request
-                    fetch('/api/share', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            cookie: 'your_facebook_cookie',
-                            link: 'https://www.facebook.com/post/123',
-                            limit: 100
-                        })
-                    })
-                </div>
-                
-                <div class="code-block" style="margin-top: 0.5rem;">
-                    // Response
-                    {
-                        "status": "processing",
-                        "message": "Starting share process...",
-                        "share_id": "1706123456789"
+                    {<br>
+                    &nbsp;&nbsp;"cookie": "c_user=123456; xs=abcdef",<br>
+                    &nbsp;&nbsp;"link": "https://www.facebook.com/post/123",<br>
+                    &nbsp;&nbsp;"limit": 100<br>
                     }
                 </div>
             </div>
 
-            <!-- Progress Endpoint -->
             <div class="endpoint">
-                <div>
+                <div class="endpoint-header">
                     <span class="method method-get">GET</span>
                     <span class="endpoint-url">/api/share/:id/progress</span>
                 </div>
-                <div class="description">
-                    Get real-time progress of a share campaign.
-                </div>
-                
+                <div class="description">Monitor campaign progress in real-time</div>
                 <div class="code-block">
-                    // Example Request
-                    fetch('/api/share/1706123456789/progress')
-                    
-                    // Response
-                    {
-                        "status": true,
-                        "share": {
-                            "id": "1706123456789",
-                            "progress": 45,
-                            "success": 45,
-                            "failed": 0,
-                            "requested": 100,
-                            "status": "processing",
-                            "active": true
-                        }
-                    }
+                    Response: { "status": true, "share": { "progress": 45, "success": 45, "failed": 0, "status": "processing" } }
                 </div>
             </div>
 
-            <!-- Cancel Endpoint -->
             <div class="endpoint">
-                <div>
+                <div class="endpoint-header">
                     <span class="method method-post">POST</span>
                     <span class="endpoint-url">/api/share/:id/cancel</span>
                 </div>
-                <div class="description">
-                    Cancel an ongoing share campaign.
-                </div>
-                
-                <div class="code-block">
-                    // Example Request
-                    fetch('/api/share/1706123456789/cancel', { method: 'POST' })
-                    
-                    // Response
-                    {
-                        "status": true,
-                        "message": "Share cancelled successfully"
-                    }
-                </div>
+                <div class="description">Terminate an active campaign</div>
             </div>
         </div>
 
         <!-- Data Endpoints -->
         <div class="api-section">
-            <h2><i class="fas fa-database"></i> Data & Statistics</h2>
-            
-            <div class="endpoint">
-                <div>
-                    <span class="method method-get">GET</span>
-                    <span class="endpoint-url">/api/history</span>
+            <h2><i class="fas fa-database"></i> DATA & STATISTICS</h2>
+            <div class="grid-2col">
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-url">/api/history</span>
+                    </div>
+                    <div class="description">View share campaign history</div>
                 </div>
-                <div class="description">
-                    Get share campaign history.
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-url">/api/stats</span>
+                    </div>
+                    <div class="description">Get overall system statistics</div>
                 </div>
-                <div class="code-block">
-                    // Example Request
-                    fetch('/api/history?limit=20')
-                    
-                    // Response
-                    {
-                        "status": true,
-                        "history": [
-                            {
-                                "id": "1706123456789",
-                                "link": "https://www.facebook.com/...",
-                                "success": 95,
-                                "failed": 5,
-                                "status": "completed",
-                                "startTime": "2024-01-25T10:00:00Z"
-                            }
-                        ]
-                    }
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-url">/api/running-shares</span>
+                    </div>
+                    <div class="description">List all active campaigns</div>
                 </div>
-            </div>
-
-            <div class="endpoint">
-                <div>
-                    <span class="method method-get">GET</span>
-                    <span class="endpoint-url">/api/stats</span>
-                </div>
-                <div class="description">
-                    Get overall statistics.
-                </div>
-                
-                <div class="code-block">
-                    // Response
-                    {
-                        "status": true,
-                        "stats": {
-                            "total_shares": 1250,
-                            "total_successful_shares": 1180,
-                            "total_failed_shares": 70,
-                            "completed_shares": 25,
-                            "success_rate": 94,
-                            "active_shares": 2,
-                            "rate": "5 shares per 2 seconds"
-                        }
-                    }
-                </div>
-            </div>
-
-            <div class="endpoint">
-                <div>
-                    <span class="method method-get">GET</span>
-                    <span class="endpoint-url">/api/running-shares</span>
-                </div>
-                <div class="description">
-                    Get currently active/running share campaigns.
-                </div>
-            </div>
-        </div>
-
-        <!-- System Endpoints -->
-        <div class="api-section">
-            <h2><i class="fas fa-server"></i> System</h2>
-            
-            <div class="endpoint">
-                <div>
-                    <span class="method method-get">GET</span>
-                    <span class="endpoint-url">/api/health</span>
-                </div>
-                <div class="description">
-                    Health check endpoint.
-                </div>
-                
-                <div class="code-block">
-                    // Response
-                    {
-                        "status": true,
-                        "message": "Server is running",
-                        "timestamp": "2024-01-25T10:00:00Z",
-                        "uptime": 3600,
-                        "active_shares": 2
-                    }
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method method-get">GET</span>
+                        <span class="endpoint-url">/api/health</span>
+                    </div>
+                    <div class="description">System health check</div>
                 </div>
             </div>
         </div>
 
         <!-- Error Codes -->
         <div class="api-section">
-            <h2><i class="fas fa-exclamation-triangle"></i> Error Codes</h2>
+            <h2><i class="fas fa-exclamation-triangle"></i> ERROR CODES</h2>
             <table class="param-table">
-                <thead>
-                    <tr><th>Code</th><th>Description</th></tr>
-                </thead>
+                <thead><tr><th>Code</th><th>Description</th></tr></thead>
                 <tbody>
                     <tr><td>400</td><td>Bad Request - Missing or invalid parameters</td></tr>
-                    <tr><td>404</td><td>Not Found - Share campaign not found</td></tr>
+                    <tr><td>404</td><td>Not Found - Campaign not found</td></tr>
                     <tr><td>429</td><td>Too Many Requests - Rate limit exceeded</td></tr>
                     <tr><td>500</td><td>Internal Server Error</td></tr>
                 </tbody>
             </table>
-        </div>
-
-        <!-- Rate Limits -->
-        <div class="api-section">
-            <h2><i class="fas fa-gauge-high"></i> Rate Limits</h2>
-            <div class="description">
-                <p><strong>Share Rate:</strong> 5 shares per 2 seconds</p>
-                <p><strong>Max per Campaign:</strong> 5000 shares</p>
-                <p><strong>API Rate Limit:</strong> 2000 requests per minute</p>
-                <p><strong>Concurrent Campaigns:</strong> 10 maximum</p>
-            </div>
         </div>
     </div>
 </body>
