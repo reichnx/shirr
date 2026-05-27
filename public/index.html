@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Share Tool</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Facebook Share Bot - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -13,319 +13,205 @@
             box-sizing: border-box;
         }
 
-        :root {
-            /* Light theme */
-            --bg-primary: #f0f2f5;
-            --bg-secondary: #ffffff;
-            --text-primary: #1a1a1a;
-            --text-secondary: #65676b;
-            --accent-color: #1877f2;
-            --accent-hover: #166fe5;
-            --border-color: #e4e6eb;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --success-color: #42b72a;
-            --error-color: #f02849;
-            --warning-color: #f7b928;
-            --card-bg: #ffffff;
-            --input-bg: #f5f6f7;
-            --navbar-bg: #ffffff;
-        }
-
-        [data-theme="dark"] {
-            --bg-primary: #18191a;
-            --bg-secondary: #242526;
-            --text-primary: #e4e6eb;
-            --text-secondary: #b0b3b8;
-            --accent-color: #2d88ff;
-            --accent-hover: #1877f2;
-            --border-color: #3e4042;
-            --shadow-color: rgba(0, 0, 0, 0.3);
-            --success-color: #42b72a;
-            --error-color: #f02849;
-            --warning-color: #f7b928;
-            --card-bg: #242526;
-            --input-bg: #3a3b3c;
-            --navbar-bg: #242526;
-        }
-
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            transition: background-color 0.3s ease, color 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
 
         /* Navbar */
         .navbar {
-            background-color: var(--navbar-bg);
-            box-shadow: 0 2px 4px var(--shadow-color);
-            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-            background-color: rgba(var(--navbar-bg-rgb), 0.8);
+            z-index: 1000;
         }
 
         .nav-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--accent-color);
         }
 
         .logo i {
-            font-size: 1.8rem;
+            background: none;
+            color: #667eea;
+            -webkit-background-clip: unset;
         }
 
         .nav-links {
             display: flex;
             gap: 2rem;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .nav-links a {
-            color: var(--text-primary);
             text-decoration: none;
-            font-weight: 500;
+            color: #4b5563;
+            font-weight: 600;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            transition: color 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
         }
 
-        .nav-links a:hover {
-            color: var(--accent-color);
+        .nav-links a:hover, .nav-links a.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
         }
 
-        .nav-links a.active {
-            color: var(--accent-color);
-        }
-
-        /* Theme toggle */
-        .theme-toggle {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0.5rem;
-            border-radius: 50%;
-            transition: background-color 0.3s ease;
-        }
-
-        .theme-toggle:hover {
-            background-color: var(--border-color);
-        }
-
-        /* Main container */
+        /* Main Container */
         .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-
-        /* Cards */
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
+            max-width: 1400px;
+            margin: 0 auto;
             padding: 2rem;
-            box-shadow: 0 2px 8px var(--shadow-color);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid var(--border-color);
         }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--shadow-color);
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
-        /* Forms */
-        .form-group {
-            margin-bottom: 1.5rem;
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
 
-        .form-group label {
-            display: block;
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-header i {
+            font-size: 2.5rem;
+            color: #667eea;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1f2937;
             margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
             font-weight: 500;
-            color: var(--text-primary);
         }
 
-        .form-group label i {
-            margin-right: 0.5rem;
-            color: var(--accent-color);
+        /* Quick Actions */
+        .quick-actions {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
 
-        .form-control {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            background-color: var(--input-bg);
-            color: var(--text-primary);
-            font-size: 1rem;
-            transition: all 0.3s ease;
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .form-control:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.2);
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
-        .form-control::placeholder {
-            color: var(--text-secondary);
-        }
-
-        /* Buttons */
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
+            font-size: 1rem;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 0.5rem;
+            text-decoration: none;
         }
 
         .btn-primary {
-            background-color: var(--accent-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
-        .btn-primary:hover:not(:disabled) {
-            background-color: var(--accent-hover);
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(24, 119, 242, 0.3);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
 
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #4b5563;
         }
 
-        .btn-outline {
-            background-color: transparent;
-            border: 2px solid var(--border-color);
-            color: var(--text-primary);
+        .btn-secondary:hover {
+            background: #e5e7eb;
         }
 
-        .btn-outline:hover {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
-        }
-
-        /* Progress bar */
-        .progress-container {
-            margin-top: 1rem;
-            background-color: var(--border-color);
-            border-radius: 10px;
-            height: 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-color), var(--accent-hover));
-            transition: width 0.3s ease;
-            border-radius: 10px;
-        }
-
-        /* Alerts */
-        .alert {
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            animation: slideIn 0.3s ease;
-        }
-
-        .alert i {
-            font-size: 1.2rem;
-        }
-
-        .alert-success {
-            background-color: rgba(66, 183, 42, 0.1);
-            border: 1px solid var(--success-color);
-            color: var(--success-color);
-        }
-
-        .alert-error {
-            background-color: rgba(240, 40, 73, 0.1);
-            border: 1px solid var(--error-color);
-            color: var(--error-color);
-        }
-
-        .alert-warning {
-            background-color: rgba(247, 185, 40, 0.1);
-            border: 1px solid var(--warning-color);
-            color: var(--warning-color);
-        }
-
-        /* Grid */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        /* Stats cards */
-        .stat-card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .btn-danger {
+            background: #ef4444;
             color: white;
-            font-size: 1.5rem;
         }
 
-        .stat-info h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
+        .btn-danger:hover {
+            background: #dc2626;
         }
 
-        .stat-info p {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
+        /* Recent History */
+        .history-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
         }
 
-        /* History table */
-        .table-container {
+        .history-table {
             overflow-x: auto;
-            margin-top: 1.5rem;
         }
 
         table {
@@ -333,417 +219,236 @@
             border-collapse: collapse;
         }
 
-        th {
-            text-align: left;
+        th, td {
             padding: 1rem;
-            background-color: var(--input-bg);
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #4b5563;
         }
 
         .status-badge {
+            display: inline-block;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            text-transform: uppercase;
         }
 
         .status-completed {
-            background-color: rgba(66, 183, 42, 0.1);
-            color: var(--success-color);
+            background: #d1fae5;
+            color: #065f46;
         }
 
         .status-processing {
-            background-color: rgba(247, 185, 40, 0.1);
-            color: var(--warning-color);
+            background: #fed7aa;
+            color: #92400e;
         }
 
         .status-failed {
-            background-color: rgba(240, 40, 73, 0.1);
-            color: var(--error-color);
+            background: #fee2e2;
+            color: #991b1b;
         }
 
-        /* Loading spinner */
+        .progress-bar {
+            width: 100px;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
         .spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid var(--border-color);
-            border-top-color: var(--accent-color);
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Tooltips */
-        [data-tooltip] {
-            position: relative;
-            cursor: help;
-        }
-
-        [data-tooltip]:before {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 0.5rem;
-            background-color: var(--bg-secondary);
-            color: var(--text-primary);
-            border-radius: 4px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px var(--shadow-color);
-            z-index: 10;
-        }
-
-        [data-tooltip]:hover:before {
-            visibility: visible;
-            opacity: 1;
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .nav-links span {
-                display: none;
-            }
-            
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            
             .container {
-                padding: 0 1rem;
+                padding: 1rem;
             }
             
-            .card {
-                padding: 1.5rem;
+            .nav-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .stat-value {
+                font-size: 1.8rem;
+            }
+            
+            th, td {
+                padding: 0.5rem;
+                font-size: 0.85rem;
             }
         }
 
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 400px;
-            width: 90%;
-            border: 1px solid var(--border-color);
-            animation: slideIn 0.3s ease;
-        }
-
-        /* Skeleton loading */
-        .skeleton {
-            background: linear-gradient(
-                90deg,
-                var(--border-color) 25%,
-                var(--input-bg) 50%,
-                var(--border-color) 75%
-            );
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            border-radius: 4px;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* Floating action button */
-        .fab {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background-color: var(--accent-color);
-            color: white;
+        /* Alert */
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 12px rgba(24, 119, 242, 0.4);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            z-index: 90;
+            gap: 0.5rem;
         }
 
-        .fab:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 16px rgba(24, 119, 242, 0.6);
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
         }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
                 <i class="fab fa-facebook"></i>
-                <span>ShareMaster</span>
+                <span>ShareBot</span>
             </div>
             <div class="nav-links">
                 <a href="/" class="active">
                     <i class="fas fa-home"></i>
-                    <span>Home</span>
+                    Dashboard
                 </a>
                 <a href="/share">
-                    <i class="fas fa-history"></i>
-                    <span>History</span>
+                    <i class="fas fa-share-alt"></i>
+                    New Share
                 </a>
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-moon"></i>
-                </button>
+                <a href="/api-docs">
+                    <i class="fas fa-book"></i>
+                    API Docs
+                </a>
             </div>
         </div>
     </nav>
 
-    <!-- Main Container -->
     <div class="container">
         <!-- Stats Grid -->
-        <div class="grid" id="statsGrid">
-            <div class="skeleton" style="height: 100px;"></div>
-            <div class="skeleton" style="height: 100px;"></div>
-            <div class="skeleton" style="height: 100px;"></div>
-        </div>
-
-        <!-- Share Form Card -->
-        <div class="card" style="margin-top: 2rem;">
-            <h2 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fas fa-share-alt" style="color: var(--accent-color);"></i>
-                New Share Request
-            </h2>
-            
-            <form id="shareForm">
-                <div class="form-group">
-                    <label for="cookie">
-                        <i class="fas fa-cookie"></i>
-                        Facebook Cookie
-                    </label>
-                    <input 
-                        type="text" 
-                        class="form-control" 
-                        id="cookie" 
-                        placeholder="Enter your Facebook cookie"
-                        required
-                    >
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <i class="fas fa-chart-line"></i>
                 </div>
-
-                <div class="form-group">
-                    <label for="link">
-                        <i class="fas fa-link"></i>
-                        Post Link
-                    </label>
-                    <input 
-                        type="url" 
-                        class="form-control" 
-                        id="link" 
-                        placeholder="https://facebook.com/..."
-                        required
-                    >
-                </div>
-
-                <div class="form-group">
-                    <label for="limit">
-                        <i class="fas fa-sort-amount-up"></i>
-                        Share Limit
-                    </label>
-                    <input 
-                        type="number" 
-                        class="form-control" 
-                        id="limit" 
-                        placeholder="Enter number of shares (max 1000)"
-                        min="1"
-                        max="1000"
-                        required
-                    >
-                </div>
-
-                <button type="submit" class="btn btn-primary" id="submitBtn" style="width: 100%;">
-                    <i class="fas fa-paper-plane"></i>
-                    Start Sharing
-                </button>
-            </form>
-
-            <!-- Progress -->
-            <div id="progressSection" style="display: none; margin-top: 1.5rem;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span>Progress</span>
-                    <span id="progressPercent">0%</span>
-                </div>
-                <div class="progress-container">
-                    <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; color: var(--text-secondary);">
-                    <span><i class="fas fa-check-circle" style="color: var(--success-color);"></i> <span id="successCount">0</span></span>
-                    <span><i class="fas fa-times-circle" style="color: var(--error-color);"></i> <span id="failedCount">0</span></span>
-                </div>
+                <div class="stat-value" id="totalShares">0</div>
+                <div class="stat-label">Total Shares</div>
             </div>
-
-            <!-- Cancel Button -->
-            <button class="btn btn-outline" id="cancelBtn" style="width: 100%; margin-top: 1rem; display: none;">
-                <i class="fas fa-stop-circle"></i>
-                Cancel Share
-            </button>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-value" id="totalSuccess">0</div>
+                <div class="stat-label">Successful Shares</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-value" id="totalFailed">0</div>
+                <div class="stat-label">Failed Shares</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <i class="fas fa-percent"></i>
+                </div>
+                <div class="stat-value" id="successRate">0%</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
         </div>
 
-        <!-- Alerts Container -->
-        <div id="alerts" style="margin-top: 1rem;"></div>
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <div class="section-title">
+                <i class="fas fa-bolt"></i>
+                Quick Actions
+            </div>
+            <div class="action-buttons">
+                <a href="/share" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    New Share Campaign
+                </a>
+                <button class="btn btn-secondary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Data
+                </button>
+            </div>
+        </div>
 
         <!-- Recent History -->
-        <div class="card" style="margin-top: 2rem;">
-            <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fas fa-clock"></i>
-                Recent Activity
-            </h3>
-            <div class="table-container">
+        <div class="history-section">
+            <div class="section-title">
+                <i class="fas fa-history"></i>
+                Recent Share History
+            </div>
+            <div class="history-table">
                 <table id="historyTable">
                     <thead>
                         <tr>
-                            <th>Time</th>
+                            <th>ID</th>
                             <th>Link</th>
                             <th>Success/Failed</th>
                             <th>Status</th>
+                            <th>Progress</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
                     <tbody id="historyBody">
-                        <!-- History will be populated here -->
+                        <tr>
+                            <td colspan="6" style="text-align: center;">Loading...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Floating Action Button -->
-    <button class="fab" id="fab" data-tooltip="New Share">
-        <i class="fas fa-plus"></i>
-    </button>
-
-    <!-- Modal -->
-    <div class="modal" id="modal">
-        <div class="modal-content">
-            <h3 style="margin-bottom: 1rem;">Share Completed!</h3>
-            <p id="modalMessage"></p>
-            <button class="btn btn-primary" onclick="closeModal()" style="width: 100%; margin-top: 1rem;">
-                Close
-            </button>
-        </div>
-    </div>
-
     <script>
-        // Theme management
-        const themeToggle = document.getElementById('themeToggle');
-        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        // Get initial theme
-        let currentTheme = localStorage.getItem('theme') || 
-                         (prefersDarkScheme.matches ? 'dark' : 'light');
-        
-        // Apply theme
-        document.documentElement.setAttribute('data-theme', currentTheme);
-        updateThemeIcon(currentTheme);
-
-        // Theme toggle handler
-        themeToggle.addEventListener('click', () => {
-            const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        });
-
-        function updateThemeIcon(theme) {
-            themeToggle.innerHTML = theme === 'light' ? 
-                '<i class="fas fa-moon"></i>' : 
-                '<i class="fas fa-sun"></i>';
-        }
-
-        // State management
-        let currentShareId = null;
-        let progressInterval = null;
+        // API Base URL
+        const API_BASE = window.location.origin;
 
         // Load stats
         async function loadStats() {
             try {
-                const response = await fetch('/api/stats');
+                const response = await fetch(`${API_BASE}/api/stats`);
                 const data = await response.json();
                 
                 if (data.status) {
-                    const stats = data.stats;
-                    document.getElementById('statsGrid').innerHTML = `
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>${stats.total_shares}</h3>
-                                <p>Total Shares</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>${stats.total_successful_shares}</h3>
-                                <p>Successful Shares</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">
-                                <i class="fas fa-percent"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>${stats.success_rate}%</h3>
-                                <p>Success Rate</p>
-                            </div>
-                        </div>
-                    `;
+                    document.getElementById('totalShares').textContent = data.stats.total_shares;
+                    document.getElementById('totalSuccess').textContent = data.stats.total_successful_shares;
+                    document.getElementById('totalFailed').textContent = data.stats.total_failed_shares;
+                    document.getElementById('successRate').textContent = `${data.stats.success_rate}%`;
                 }
             } catch (error) {
                 console.error('Error loading stats:', error);
@@ -753,226 +458,47 @@
         // Load history
         async function loadHistory() {
             try {
-                const response = await fetch('/api/history?limit=10');
+                const response = await fetch(`${API_BASE}/api/history?limit=20`);
                 const data = await response.json();
                 
-                if (data.status && data.history) {
-                    const historyBody = document.getElementById('historyBody');
-                    historyBody.innerHTML = data.history.map(item => {
-                        const time = new Date(item.startTime).toLocaleTimeString();
-                        const statusClass = `status-badge status-${item.status}`;
-                        
-                        return `
-                            <tr>
-                                <td>${time}</td>
-                                <td>
-                                    <a href="${item.link}" target="_blank" style="color: var(--accent-color);">
-                                        ${item.link.substring(0, 30)}...
-                                    </a>
-                                </td>
-                                <td>
-                                    <span style="color: var(--success-color);">${item.success || 0}</span> /
-                                    <span style="color: var(--error-color);">${item.failed || 0}</span>
-                                </td>
-                                <td>
-                                    <span class="${statusClass}">${item.status}</span>
-                                </td>
-                            </tr>
+                if (data.status && data.history.length > 0) {
+                    const tbody = document.getElementById('historyBody');
+                    tbody.innerHTML = '';
+                    
+                    data.history.forEach(item => {
+                        const row = tbody.insertRow();
+                        row.innerHTML = `
+                            <td>${item.id}</td>
+                            <td><a href="${item.link}" target="_blank" style="color: #667eea; text-decoration: none;">${item.link.substring(0, 30)}...</a></td>
+                            <td>${item.success}/${item.requested}</td>
+                            <td><span class="status-badge status-${item.status}">${item.status}</span></td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${item.progress || 0}%"></div>
+                                </div>
+                            </td>
+                            <td>${new Date(item.startTime).toLocaleString()}</td>
                         `;
-                    }).join('');
+                    });
+                } else {
+                    document.getElementById('historyBody').innerHTML = '<tr><td colspan="6" style="text-align: center;">No history found</td></tr>';
                 }
             } catch (error) {
                 console.error('Error loading history:', error);
             }
         }
 
-        // Show alert
-        function showAlert(message, type = 'success') {
-            const alertsDiv = document.getElementById('alerts');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            
-            let icon = type === 'success' ? 'fa-check-circle' : 
-                      type === 'error' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle';
-            
-            alert.innerHTML = `
-                <i class="fas ${icon}"></i>
-                <span>${message}</span>
-            `;
-            
-            alertsDiv.appendChild(alert);
-            
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                alert.remove();
-            }, 5000);
+        // Refresh all data
+        async function refreshData() {
+            await loadStats();
+            await loadHistory();
         }
 
-        // Start progress tracking
-        function startProgressTracking(shareId) {
-            currentShareId = shareId;
-            
-            if (progressInterval) {
-                clearInterval(progressInterval);
-            }
-            
-            progressInterval = setInterval(async () => {
-                try {
-                    const response = await fetch(`/api/share/${shareId}/progress`);
-                    const data = await response.json();
-                    
-                    if (data.status && data.share) {
-                        const share = data.share;
-                        
-                        document.getElementById('progressSection').style.display = 'block';
-                        document.getElementById('progressPercent').textContent = `${share.progress}%`;
-                        document.getElementById('progressBar').style.width = `${share.progress}%`;
-                        document.getElementById('successCount').textContent = share.success;
-                        document.getElementById('failedCount').textContent = share.failed;
-                        
-                        if (share.status !== 'processing' || !share.active) {
-                            clearInterval(progressInterval);
-                            progressInterval = null;
-                            currentShareId = null;
-                            
-                            document.getElementById('submitBtn').disabled = false;
-                            document.getElementById('cancelBtn').style.display = 'none';
-                            
-                            if (share.status === 'completed') {
-                                showModal(`Successfully shared ${share.success} times!`);
-                                showAlert(`Share completed! ${share.success} successful shares.`, 'success');
-                            } else if (share.status === 'failed') {
-                                showAlert('Share failed. Please check your cookie.', 'error');
-                            } else if (share.status === 'cancelled') {
-                                showAlert('Share cancelled.', 'warning');
-                            }
-                            
-                            loadHistory();
-                            loadStats();
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error tracking progress:', error);
-                }
-            }, 2000);
-        }
-
-        // Show modal
-        function showModal(message) {
-            document.getElementById('modalMessage').textContent = message;
-            document.getElementById('modal').classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('active');
-        }
-
-        // Form submission
-        document.getElementById('shareForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const cookie = document.getElementById('cookie').value;
-            const link = document.getElementById('link').value;
-            const limit = document.getElementById('limit').value;
-            
-            if (!cookie || !link || !limit) {
-                showAlert('Please fill all fields', 'error');
-                return;
-            }
-            
-            if (limit > 1000) {
-                showAlert('Maximum limit is 1000', 'error');
-                return;
-            }
-            
-            try {
-                document.getElementById('submitBtn').disabled = true;
-                document.getElementById('submitBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                
-                const response = await fetch('/api/share', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ cookie, link, limit })
-                });
-                
-                const data = await response.json();
-                
-                if (data.status === 'processing' && data.share_id) {
-                    document.getElementById('cancelBtn').style.display = 'block';
-                    showAlert('Share started! Tracking progress...', 'success');
-                    startProgressTracking(data.share_id);
-                } else if (data.status === true) {
-                    showAlert(data.message, 'success');
-                    document.getElementById('submitBtn').disabled = false;
-                    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-paper-plane"></i> Start Sharing';
-                } else {
-                    showAlert(data.message || 'Something went wrong', 'error');
-                    document.getElementById('submitBtn').disabled = false;
-                    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-paper-plane"></i> Start Sharing';
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showAlert('Network error. Please try again.', 'error');
-                document.getElementById('submitBtn').disabled = false;
-                document.getElementById('submitBtn').innerHTML = '<i class="fas fa-paper-plane"></i> Start Sharing';
-            }
-        });
-
-        // Cancel share
-        document.getElementById('cancelBtn').addEventListener('click', async () => {
-            if (!currentShareId) return;
-            
-            try {
-                const response = await fetch(`/api/share/${currentShareId}/cancel`, {
-                    method: 'POST'
-                });
-                
-                const data = await response.json();
-                
-                if (data.status) {
-                    showAlert('Share cancelled', 'warning');
-                    document.getElementById('cancelBtn').style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error cancelling share:', error);
-            }
-        });
-
-        // FAB click
-        document.getElementById('fab').addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        // Load running shares on startup
-        async function loadRunningShares() {
-            try {
-                const response = await fetch('/api/running-shares');
-                const data = await response.json();
-                
-                if (data.status && data.running_shares && data.running_shares.length > 0) {
-                    const share = data.running_shares[0];
-                    startProgressTracking(share.id);
-                }
-            } catch (error) {
-                console.error('Error loading running shares:', error);
-            }
-        }
-
+        // Auto refresh every 10 seconds
+        setInterval(refreshData, 10000);
+        
         // Initial load
-        loadStats();
-        loadHistory();
-        loadRunningShares();
-
-        // Refresh data periodically
-        setInterval(() => {
-            if (!currentShareId) {
-                loadStats();
-                loadHistory();
-            }
-        }, 30000);
+        refreshData();
     </script>
 </body>
 </html>
