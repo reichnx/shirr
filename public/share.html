@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Facebook Share Booster - New Campaign</title>
+    <title>FBS API - New Campaign</title>
     <link rel="icon" type="image/png" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23667eea'/%3E%3Ctext x='50' y='68' font-size='50' text-anchor='middle' fill='white' font-weight='bold'%3EFS%3C/text%3E%3C/svg%3E">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -11,9 +11,16 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a3e 50%, #0f3460 100%);
             min-height: 100vh;
             color: #fff;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
         .navbar {
             background: rgba(255, 255, 255, 0.08);
@@ -43,6 +50,14 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+        }
+        .fbs-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
         }
         .nav-links {
             display: flex;
@@ -93,7 +108,7 @@
             padding-bottom: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .dual-badge {
+        .smart-badge {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
@@ -218,6 +233,21 @@
         .alert-success { background: rgba(0, 255, 0, 0.1); border-left: 3px solid #00ff88; color: #00ff88; }
         .alert-error { background: rgba(255, 0, 0, 0.1); border-left: 3px solid #ff6666; color: #ff8888; }
         .alert-info { background: rgba(102, 126, 234, 0.1); border-left: 3px solid #667eea; color: #667eea; }
+        .info-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 0.8rem;
+            margin-top: 1rem;
+        }
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .info-item i { width: 20px; color: #667eea; }
         @media (max-width: 768px) {
             .nav-container { flex-direction: column; text-align: center; }
             .container { padding: 1rem; }
@@ -228,10 +258,14 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="logo"><i class="fab fa-facebook"></i><span>Facebook Share Booster</span></div>
+            <div class="logo">
+                <i class="fab fa-facebook"></i>
+                <span>FBS API</span>
+                <span class="fbs-badge">SMART DUAL API</span>
+            </div>
             <div class="nav-links">
                 <a href="/"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="/share" class="active"><i class="fas fa-share-alt"></i> Share</a>
+                <a href="/share" class="active"><i class="fas fa-share-alt"></i> New Campaign</a>
                 <a href="/api-docs"><i class="fas fa-code"></i> API Docs</a>
             </div>
         </div>
@@ -241,8 +275,8 @@
         <div class="glass-card">
             <div class="form-title"><i class="fas fa-rocket"></i> New Campaign</div>
             <div class="form-subtitle">
-                Execute automated share campaign with DUAL API PARALLEL PROCESSING
-                <div class="dual-badge"><i class="fas fa-bolt"></i> Main API + Vern API Running Simultaneously (No Selection Needed)</div>
+                FBS Smart Dual API - 2 APIs working as one
+                <div class="smart-badge"><i class="fas fa-microchip"></i> Auto Load Balancing + Auto Failover</div>
             </div>
             <div id="alertContainer"></div>
             
@@ -261,11 +295,19 @@
                 <div class="form-group">
                     <label><i class="fas fa-chart-line"></i> Share Count <span class="range-value" id="limitValue">100</span></label>
                     <input type="range" id="amount" min="1" max="1000" value="100" oninput="document.getElementById('limitValue').innerText = this.value"/>
-                    <div class="info-text"><i class="fas fa-bolt"></i> Max 1000 shares - Split equally between Main API & Vern API (Parallel)</div>
+                    <div class="info-text"><i class="fas fa-bolt"></i> Max 1000 shares - FBS API guarantees target completion</div>
                 </div>
                 
-                <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-play"></i> Start Parallel Campaign</button>
+                <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-play"></i> Start FBS Campaign</button>
             </form>
+            
+            <div class="info-panel">
+                <div class="info-item"><i class="fas fa-microchip"></i> <strong>How FBS API Works:</strong></div>
+                <div class="info-item"><i class="fas fa-random"></i> 50/50 split between Main API + Vern API</div>
+                <div class="info-item"><i class="fas fa-sync-alt"></i> If one API fails, the other takes over</div>
+                <div class="info-item"><i class="fas fa-check-circle"></i> Your target is always achieved</div>
+                <div class="info-item"><i class="fas fa-bolt"></i> Speed: 20 shares / 2 seconds</div>
+            </div>
             
             <div class="progress-section" id="progressSection">
                 <div class="progress-header"><span>Overall Progress</span><span id="progressPercent">0%</span></div>
@@ -297,7 +339,7 @@
             
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Starting Parallel Process...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Starting FBS Smart Dual API...';
             
             try {
                 const response = await fetch('/api/share', {
@@ -314,19 +356,19 @@
                 
                 if (result.status === 'processing' && result.share_id) {
                     currentShareId = result.share_id;
-                    showAlert('Parallel campaign started! Main API + Vern API running simultaneously.', 'success');
+                    showAlert('FBS API: Smart Dual API campaign started! (Main + Vern working together)', 'success');
                     document.getElementById('progressSection').classList.add('active');
-                    document.getElementById('shareIdDisplay').innerHTML = `Campaign ID: ${currentShareId} | 🚀 Dual API Parallel Mode`;
+                    document.getElementById('shareIdDisplay').innerHTML = `Campaign ID: ${currentShareId} | 🚀 FBS Smart Dual API`;
                     startProgressMonitoring();
                 } else {
                     showAlert('Failed: ' + (result.message || 'Unknown error'), 'error');
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-play"></i> Start Parallel Campaign';
+                    submitBtn.innerHTML = '<i class="fas fa-play"></i> Start FBS Campaign';
                 }
             } catch (error) {
                 showAlert('Network error: ' + error.message, 'error');
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fas fa-play"></i> Start Parallel Campaign';
+                submitBtn.innerHTML = '<i class="fas fa-play"></i> Start FBS Campaign';
             }
         }
         
@@ -349,7 +391,7 @@
                         if (share.status === 'completed' || share.status === 'failed' || share.status === 'cancelled') {
                             clearInterval(progressInterval);
                             document.getElementById('submitBtn').disabled = false;
-                            document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start Parallel Campaign';
+                            document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start FBS Campaign';
                             if (share.status === 'completed') {
                                 showAlert(`Campaign completed! Total: ${share.success} successful shares`, 'success');
                             } else if (share.status === 'cancelled') {
@@ -372,7 +414,7 @@
                     showAlert('Campaign cancelled', 'success');
                     clearInterval(progressInterval);
                     document.getElementById('submitBtn').disabled = false;
-                    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start Parallel Campaign';
+                    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-play"></i> Start FBS Campaign';
                     currentShareId = null;
                 } catch (error) {
                     showAlert('Error: ' + error.message, 'error');
