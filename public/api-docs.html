@@ -148,8 +148,14 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.7rem;
         }
-        .param-name { font-weight: 600; color: #667eea; }
-        .param-type { color: rgba(255, 255, 255, 0.5); font-size: 0.65rem; }
+        .param-name {
+            font-weight: 600;
+            color: #667eea;
+        }
+        .param-type {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.65rem;
+        }
         .badge {
             display: inline-block;
             padding: 0.15rem 0.4rem;
@@ -157,8 +163,14 @@
             font-size: 0.6rem;
             font-weight: 600;
         }
-        .badge-required { background: rgba(255, 0, 0, 0.2); color: #ff8888; }
-        .badge-optional { background: rgba(255, 165, 0, 0.2); color: #ffaa44; }
+        .badge-required {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff8888;
+        }
+        .badge-optional {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffaa44;
+        }
         .code-block {
             background: rgba(0, 0, 0, 0.5);
             padding: 0.6rem;
@@ -180,18 +192,39 @@
             border-radius: 10px;
             margin-bottom: 0.4rem;
         }
-        .error-code { font-weight: 700; color: #ff6666; font-size: 0.8rem; }
-        .error-desc { font-size: 0.7rem; color: rgba(255, 255, 255, 0.6); }
-        .api-badge {
+        .error-code {
+            font-weight: 700;
+            color: #ff6666;
+            font-size: 0.8rem;
+        }
+        .error-desc {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .dual-badge {
             display: inline-block;
-            padding: 0.2rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.6rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
             font-weight: 600;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             margin-left: 0.5rem;
         }
-        .api-main { background: rgba(102, 126, 234, 0.2); color: #667eea; }
-        .api-vern { background: rgba(0, 255, 255, 0.2); color: #00ffff; }
+        .feature-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .feature-item {
+            background: rgba(102, 126, 234, 0.15);
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
         @media (min-width: 768px) {
             .container { max-width: 700px; margin: 0 auto; }
         }
@@ -213,8 +246,22 @@
         <div class="glass-card">
             <div class="api-header">
                 <h1><i class="fas fa-code"></i> API Reference</h1>
-                <p>Dual API support for Facebook sharing automation</p>
+                <p>Dual API Parallel Processing - No Selection Needed</p>
                 <p style="font-size:0.7rem; margin-top:0.3rem;">Base URL: http://localhost:5000/api/</p>
+            </div>
+        </div>
+
+        <!-- System Overview -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-info-circle"></i> System Overview</div>
+            <div class="feature-list">
+                <span class="feature-item"><i class="fas fa-bolt"></i> Dual API Parallel</span>
+                <span class="feature-item"><i class="fas fa-tachometer-alt"></i> 20 shares/2 sec</span>
+                <span class="feature-item"><i class="fas fa-chart-line"></i> Max 1000 shares</span>
+                <span class="feature-item"><i class="fas fa-random"></i> Auto 50/50 Split</span>
+            </div>
+            <div class="description" style="margin-top:0.8rem;">
+                Both Main API (Facebook Graph) and Vern API run simultaneously. No manual selection required - the system automatically splits shares between both APIs for maximum speed and reliability.
             </div>
         </div>
 
@@ -224,25 +271,37 @@
             
             <div class="endpoint-card">
                 <div><span class="method-badge method-post">POST</span><span class="endpoint-url">/share</span></div>
-                <div class="description">Start a new share campaign with API selection</div>
+                <div class="description">Start a new share campaign (automatically uses both APIs)</div>
                 <div class="param-details">
                     <div class="param-item"><span class="param-name">cookie</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
                     <div class="param-item"><span class="param-name">link</span><span class="param-type">string <span class="badge badge-required">required</span></span></div>
                     <div class="param-item"><span class="param-name">limit</span><span class="param-type">integer <span class="badge badge-required">required</span> (1-1000)</span></div>
-                    <div class="param-item"><span class="param-name">use_vern</span><span class="param-type">boolean <span class="badge badge-optional">optional</span> (default: false)</span></div>
                 </div>
                 <div class="code-block">{
-  "cookie": "c_user=123; xs=abc",
-  "link": "https://facebook.com/post",
-  "limit": 100,
-  "use_vern": true
+  "cookie": "c_user=123456789; xs=abcdef",
+  "link": "https://www.facebook.com/post/123",
+  "limit": 100
 }</div>
+                <div class="description" style="margin-top:0.5rem; font-size:0.7rem;">
+                    <i class="fas fa-info-circle"></i> Shares are automatically split: 50% to Main API, 50% to Vern API
+                </div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/share/:id/progress</span></div>
-                <div class="description">Monitor campaign progress</div>
+                <div class="description">Monitor campaign progress (combined results)</div>
                 <div class="code-block">GET /api/share/1706123456789/progress</div>
+                <div class="code-block" style="margin-top:0.5rem;">{
+  "status": true,
+  "share": {
+    "id": "1706123456789",
+    "progress": 75,
+    "success": 75,
+    "failed": 0,
+    "requested": 100,
+    "status": "processing"
+  }
+}</div>
             </div>
 
             <div class="endpoint-card">
@@ -258,14 +317,19 @@
             
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/history?limit=20</span></div>
-                <div class="description">View share history with API tracking</div>
+                <div class="description">View share history (combined results)</div>
                 <div class="code-block">GET /api/history?limit=20</div>
             </div>
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/stats</span></div>
                 <div class="description">Get system statistics</div>
-                <div class="code-block">GET /api/stats</div>
+                <div class="code-block">{
+  "total_shares": 1250,
+  "total_successful_shares": 1180,
+  "success_rate": 94,
+  "active_shares": 2
+}</div>
             </div>
 
             <div class="endpoint-card">
@@ -280,30 +344,73 @@
 
             <div class="endpoint-card">
                 <div><span class="method-badge method-get">GET</span><span class="endpoint-url">/tiktok-video</span></div>
-                <div class="description">Fetch random TikTok video</div>
+                <div class="description">Fetch random TikTok video (dashboard feed)</div>
             </div>
         </div>
 
-        <!-- API Info -->
+        <!-- API Architecture -->
         <div class="glass-card">
-            <div class="section-title"><i class="fas fa-server"></i> Available APIs</div>
+            <div class="section-title"><i class="fas fa-cogs"></i> API Architecture</div>
+            
             <div class="endpoint-card">
-                <div><span class="api-badge api-main">Main API</span> <span style="margin-left:0.5rem;">Facebook Graph API</span></div>
+                <div><span class="api-name"><i class="fas fa-fire"></i> Main API</span> <span class="dual-badge">Facebook Graph API</span></div>
                 <div class="description">Uses Facebook's official Graph API with token extraction. Requires valid Facebook cookie.</div>
+                <div class="description" style="font-size:0.7rem; margin-top:0.3rem;">📊 Handles 50% of shares (max 500 per campaign)</div>
             </div>
+            
             <div class="endpoint-card">
-                <div><span class="api-badge api-vern"> API</span> <span style="margin-left:0.5rem;">External Fast API</span></div>
+                <div><span class="api-name"><i class="fas fa-bolt"></i> Vern API</span> <span class="dual-badge">External Fast API</span></div>
                 <div class="description">Uses external Vern API for faster processing. More stable and bypasses rate limits.</div>
+                <div class="description" style="font-size:0.7rem; margin-top:0.3rem;">📊 Handles 50% of shares (max 500 per campaign)</div>
+            </div>
+            
+            <div class="endpoint-card">
+                <div><span class="api-name"><i class="fas fa-random"></i> Parallel Processing</span></div>
+                <div class="description">Both APIs run simultaneously using Promise.all() for maximum speed</div>
+                <div class="description" style="font-size:0.7rem; margin-top:0.3rem;">⚡ Total speed: 20 shares per 2 seconds (10 from each API)</div>
             </div>
         </div>
 
         <!-- Error Codes -->
         <div class="glass-card">
             <div class="section-title"><i class="fas fa-exclamation-triangle"></i> Error Codes</div>
-            <div class="error-item"><span class="error-code">400</span><span class="error-desc">Bad Request - Invalid parameters</span></div>
+            <div class="error-item"><span class="error-code">400</span><span class="error-desc">Bad Request - Invalid parameters (missing cookie/link/limit)</span></div>
             <div class="error-item"><span class="error-code">404</span><span class="error-desc">Not Found - Campaign not found</span></div>
-            <div class="error-item"><span class="error-code">429</span><span class="error-desc">Too Many Requests - Slow down</span></div>
+            <div class="error-item"><span class="error-code">429</span><span class="error-desc">Too Many Requests - Rate limit exceeded</span></div>
             <div class="error-item"><span class="error-code">500</span><span class="error-desc">Internal Server Error</span></div>
+        </div>
+
+        <!-- Rate Limits -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-gauge-high"></i> Rate Limits</div>
+            <div class="description">
+                <p><strong>Share Rate:</strong> 20 shares per 2 seconds (10 Main API + 10 Vern API)</p>
+                <p><strong>Max per Campaign:</strong> 1000 shares total (500 Main + 500 Vern)</p>
+                <p><strong>API Rate Limit:</strong> 10,000 requests per minute</p>
+                <p><strong>Concurrent Campaigns:</strong> Unlimited (queued processing)</p>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-question-circle"></i> How It Works</div>
+            <div class="description">
+                <ol style="margin-left: 1.5rem; line-height: 1.6;">
+                    <li>User submits cookie, link, and share amount (1-1000)</li>
+                    <li>System automatically splits amount: 50% to Main API, 50% to Vern API</li>
+                    <li>Both APIs run simultaneously in parallel</li>
+                    <li>Main API extracts token and uses Facebook Graph API</li>
+                    <li>Vern API uses external fast API endpoint</li>
+                    <li>Results are combined into single success/failed counts</li>
+                    <li>Progress shows combined percentage from both APIs</li>
+                </ol>
+            </div>
+            <div class="feature-list" style="margin-top:0.8rem;">
+                <span class="feature-item"><i class="fas fa-check-circle"></i> No API selection needed</span>
+                <span class="feature-item"><i class="fas fa-chart-line"></i> Automatic 50/50 split</span>
+                <span class="feature-item"><i class="fas fa-bolt"></i> Parallel execution</span>
+                <span class="feature-item"><i class="fas fa-chart-simple"></i> Combined results</span>
+            </div>
         </div>
     </div>
 </body>
