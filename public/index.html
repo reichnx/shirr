@@ -159,18 +159,27 @@
             font-size: 0.7rem;
             letter-spacing: 0.5px;
         }
+        /* TikTok Video Player - 3:2 Aspect Ratio */
         .video-container {
             position: relative;
             border-radius: 16px;
             overflow: hidden;
             margin-bottom: 1rem;
             animation: glow 3s ease-in-out infinite;
+            aspect-ratio: 3 / 2;
+            background: linear-gradient(135deg, rgba(0,0,0,0.3), rgba(0,0,0,0.5));
         }
         .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover;
             border-radius: 16px;
-            display: block;
+        }
+        .video-container video::-webkit-media-controls {
+            z-index: 10;
         }
         .rainbow-border {
             border: 3px solid;
@@ -393,7 +402,7 @@
                     <div class="section-title" style="font-size: 0.8rem; margin-bottom: 0.5rem;"><i class="fas fa-server"></i> API Status</div>
                     <div style="font-size: 0.7rem; color: rgba(255,255,255,0.6);">
                         <i class="fas fa-check-circle" style="color: #00ff88;"></i> Primary: SHIR API<br>
-                        <i class="fas fa-exchange-alt" style="color: #ffa500;"></i> Fallback: SHIRV2 API
+                        <i class="fas fa-exchange-alt" style="color: #ffa500;"></i> Fallback: SHIRV2
                     </div>
                 </div>
             </div>
